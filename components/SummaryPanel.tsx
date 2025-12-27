@@ -440,7 +440,10 @@ ${originalText}`;
         onMouseDown={() => setIsResizing(true)}
       />
 
-      <div className="relative flex h-full w-full flex-col overflow-hidden border-l border-border bg-white shadow-2xl">
+      <div
+        className="relative flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl"
+        style={{ borderLeft: '1px solid #6b7280' }}
+      >
         <header className="flex items-center justify-between border-b border-border/80 px-6 py-4">
           <div className="text-lg font-semibold text-foreground">Homie</div>
           <div className="flex items-center gap-2">
