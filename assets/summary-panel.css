@@ -1,0 +1,137 @@
+@import "tailwindcss";
+@source "../components/**/*.{ts,tsx}" "../entrypoints/**/*.{ts,tsx}" "../utils/**/*.{ts,tsx}";
+
+#homie-root {
+  all: initial;
+  display: block;
+  font-family: "Inter", "Space Grotesk", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+}
+
+#homie-root *,
+#homie-root *::before,
+#homie-root *::after {
+  box-sizing: border-box;
+}
+
+@layer base {
+  :host, #homie-root {
+    --background: 210 40% 98%;
+    --foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.9rem;
+    background-color: transparent;
+  }
+
+  #homie-root {
+    background-color: transparent;
+  }
+
+  #homie-root button,
+  #homie-root input,
+  #homie-root textarea,
+  #homie-root select {
+    font-family: inherit;
+  }
+}
+
+/* Fallback button/input styling inside shadow root so actions look clickable even if utility CSS is missing */
+#homie-root button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--primary) / 0.08);
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+#homie-root button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  background: hsl(var(--primary) / 0.12);
+}
+
+#homie-root button:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+#homie-root button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#homie-root select,
+#homie-root textarea,
+#homie-root input {
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+}
+
+#homie-root textarea {
+  min-height: 120px;
+}
+
+@layer utilities {
+  #homie-root .scroll-area::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  #homie-root .scroll-area::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+  }
+
+  #homie-root .scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #homie-root .markdown-body p,
+  #homie-root .markdown-body ul,
+  #homie-root .markdown-body ol,
+  #homie-root .markdown-body pre {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  #homie-root .markdown-body a {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+  }
+
+  #homie-root .markdown-body code {
+    background: hsl(var(--muted));
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.4rem;
+    font-size: 0.85em;
+  }
+}

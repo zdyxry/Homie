@@ -1,0 +1,62 @@
+{
+  "app_description": {
+    "message": "Homie is a browser AI assistant allows you to chat based on web page content and use your own AI models"
+  },
+  "app_name": {
+    "message": "Homie - AI Assistant"
+  },
+  "chatWindow_clear_messages": {
+    "message": "Clear Messages"
+  },
+  "chatWindow_configure_ai_model": {
+    "message": "Configure AI Model"
+  },
+  "chatWindow_content_failed": {
+    "message": "Failed to get page content"
+  },
+  "chatWindow_context_contains_original": {
+    "message": "Context contains page content"
+  },
+  "chatWindow_copy": {
+    "message": "Copy"
+  },
+  "chatWindow_direct_chat": {
+    "message": "Direct chat, like"
+  },
+  "chatWindow_error_occurred": {
+    "message": "An error occurred"
+  },
+  "chatWindow_getting_subtitles": {
+    "message": "Getting subtitles"
+  },
+  "chatWindow_select_model": {
+    "message": "Select model"
+  },
+  "chatWindow_share": {
+    "message": "Share chat image"
+  },
+  "chatWindow_start_from_assistants": {
+    "message": "Start from Assistants"
+  },
+  "chatWindow_summarize_it": {
+    "message": "Summarize it"
+  },
+  "onboarding_card_use_own_key_title": {
+    "message": "I have my own model API"
+  },
+  "onboarding_card_use_own_key_descriptions": {
+    "message": "Use your own model API Key/Start using without creating an account/Chat run in your local browser, not through third-party servers"
+  },
+  "onboarding_card_use_own_key_action1": {
+    "message": "Configure Model Now"
+  },
+  "optionsPage_models_title": {
+    "message": "AI Models"
+  },
+  "optionsPage_models_add": {
+    "message": "Add Model"
+  },
+  "optionsPage_settings_title": {
+    "message": "Settings"
+  }
+}

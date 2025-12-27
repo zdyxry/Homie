@@ -1,0 +1,62 @@
+{
+  "app_description": {
+    "message": "Homie 是一个浏览器 AI 助手，允许您基于网页内容进行对话，并使用您自己的 AI 模型"
+  },
+  "app_name": {
+    "message": "Homie"
+  },
+  "chatWindow_clear_messages": {
+    "message": "清空消息"
+  },
+  "chatWindow_configure_ai_model": {
+    "message": "配置 AI 模型"
+  },
+  "chatWindow_content_failed": {
+    "message": "获取页面内容失败"
+  },
+  "chatWindow_context_contains_original": {
+    "message": "上下文包含页面内容"
+  },
+  "chatWindow_copy": {
+    "message": "复制"
+  },
+  "chatWindow_direct_chat": {
+    "message": "直接对话，如"
+  },
+  "chatWindow_error_occurred": {
+    "message": "发生错误"
+  },
+  "chatWindow_getting_subtitles": {
+    "message": "正在获取字幕"
+  },
+  "chatWindow_select_model": {
+    "message": "选择模型"
+  },
+  "chatWindow_share": {
+    "message": "分享对话图片"
+  },
+  "chatWindow_start_from_assistants": {
+    "message": "从助手开始"
+  },
+  "chatWindow_summarize_it": {
+    "message": "总结它"
+  },
+  "onboarding_card_use_own_key_title": {
+    "message": "我有自己的模型 API"
+  },
+  "onboarding_card_use_own_key_descriptions": {
+    "message": "使用您自己的模型 API Key/无需创建账户即可开始使用/对话在本地浏览器中运行，不通过第三方服务器"
+  },
+  "onboarding_card_use_own_key_action1": {
+    "message": "立即配置模型"
+  },
+  "optionsPage_models_title": {
+    "message": "AI 模型"
+  },
+  "optionsPage_models_add": {
+    "message": "添加模型"
+  },
+  "optionsPage_settings_title": {
+    "message": "设置"
+  }
+}
