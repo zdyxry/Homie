@@ -25,15 +25,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Update package.json version
+        run: npm version ${{ steps.version.outputs.VERSION }} --no-git-tag-version
+
       - name: Build Chrome extension
         run: npm run build
 
       - name: Create Chrome zip
         run: npm run zip
-
-      - name: Get version from package.json
-        id: package-version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
@@ -49,7 +52,7 @@ jobs:
             ## Homie Browser Extension ${{ github.ref_name }}
 
             ### Downloads
-            - Chrome/Edge: homie-${{ steps.package-version.outputs.version }}-chrome.zip
+            - Chrome/Edge: homie-${{ steps.version.outputs.VERSION }}-chrome.zip
 
             ### Installation
             1. Download the Chrome zip file
@@ -64,6 +67,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: .output/homie-${{ steps.package-version.outputs.version }}-chrome.zip
-          asset_name: homie-${{ steps.package-version.outputs.version }}-chrome.zip
+          asset_path: .output/homie-${{ steps.version.outputs.VERSION }}-chrome.zip
+          asset_name: homie-${{ steps.version.outputs.VERSION }}-chrome.zip
           asset_content_type: application/zip
