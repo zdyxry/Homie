@@ -24,7 +24,11 @@ interface HackerNewsDiscussion {
   createdAt: string;
 }
 
-const SummaryPanel: React.FC = () => {
+interface SummaryPanelProps {
+  onWidthChange?: (width: number) => void;
+}
+
+const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const [isVisible, setIsVisible] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -103,6 +107,19 @@ const SummaryPanel: React.FC = () => {
       };
     }
   }, [isResizing]);
+
+  useEffect(() => {
+    props.onWidthChange?.(panelWidth);
+  }, [panelWidth]);
+
+  useEffect(() => {
+    if (isVisible) {
+      props.onWidthChange?.(panelWidth);
+    } else {
+      props.onWidthChange?.(0);
+    }
+  }, [isVisible]);
+
 
   useEffect(() => {
     if (autoScroll) {
