@@ -275,7 +275,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       const userMessage: ChatMessage = {
         id: nanoid(),
         role: 'user',
-        content: `Please summarize the following content:\n\n${pageContent.textContent.slice(0, 4000)}`,
+        content: `Please summarize the following content:\n\n${pageContent.textContent}`,
         timestamp: Date.now(),
       };
 
@@ -297,7 +297,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       // 替换用户提示词中的 {{content}} 占位符
       const userPromptContent = assistant.userPrompt.replace(
         /\{\{content\}\}/g,
-        pageContent.textContent.slice(0, 4000)
+        pageContent.textContent
       );
 
       const systemMessage: ChatMessage = {
@@ -358,7 +358,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
           const userMessageWithContext: ChatMessage = {
             id: nanoid(),
             role: 'user',
-            content: `Current page content:\n---\nTitle: ${pageContent.title}\n\n${pageContent.textContent.slice(0, 4000)}\n---\n\nUser question: ${inputValue}`,
+            content: `Current page content:\n---\nTitle: ${pageContent.title}\n\n${pageContent.textContent}\n---\n\nUser question: ${inputValue}`,
             timestamp: Date.now(),
           };
 
@@ -410,7 +410,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
 
       // 获取原文内容
       const pageContent = await extractPageContent();
-      const originalText = pageContent?.textContent.slice(0, 4000) || '无法获取原文内容';
+      const originalText = pageContent?.textContent || '无法获取原文内容';
 
       // 构建分析提示词
       const analysisPrompt = `这是一个 HackerNews 的讨论串，人们在这里对一篇文章进行树状结构的讨论回复，请仔细阅读这些讨论，提炼出主要的几种观点，并引用其中你认为有价值的回复。并结合其所讨论的原文，生成一个 reading review, 包含原文的核心观点、讨论的观点、以及两者结合后的思考和分析。请使用中文输出。

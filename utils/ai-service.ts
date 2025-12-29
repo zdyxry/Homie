@@ -82,7 +82,27 @@ export class AIService {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // 尝试解析错误响应以获取更详细的错误信息
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          const apiError = errorData.error?.message || errorData.message || errorData.detail;
+          if (apiError) {
+            // 检测 token 超限错误
+            if (apiError.toLowerCase().includes('token') ||
+              apiError.toLowerCase().includes('context length') ||
+              apiError.toLowerCase().includes('too long') ||
+              apiError.toLowerCase().includes('maximum') ||
+              apiError.toLowerCase().includes('exceeds')) {
+              errorMessage = `内容长度超出模型限制：${apiError}\n\n建议：请尝试使用支持更大上下文的模型，或缩短页面内容。`;
+            } else {
+              errorMessage = apiError;
+            }
+          }
+        } catch {
+          // 如果无法解析 JSON，使用原始错误信息
+        }
+        throw new Error(errorMessage);
       }
 
       const reader = response.body?.getReader();
