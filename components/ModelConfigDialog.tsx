@@ -303,7 +303,7 @@ export const ModelConfigDialog: React.FC<ModelConfigDialogProps> = ({
                 disabled={models.length === 0}
               />
               {showModelDropdown && filteredModels.length > 0 && (
-                <div className="absolute z-10 mt-1 max-h-[70vh] w-full overflow-auto rounded-lg border border-border bg-white shadow-lg">
+                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-border bg-white shadow-xl">
                   {filteredModels.map((model) => (
                     <button
                       key={model.id}
