@@ -55,7 +55,7 @@ export const ModelConfigDialog: React.FC<ModelConfigDialogProps> = ({
   // 获取默认的 API 端点
   const getDefaultEndpoint = (providerType: string): string => {
     const endpoints: Record<string, string> = {
-      gemini: 'https://generativelanguage.googleapis.com/v1',
+      gemini: 'https://generativelanguage.googleapis.com/v1beta',
       deepseek: 'https://api.deepseek.com/v1',
     };
     return endpoints[providerType] || '';
@@ -80,7 +80,7 @@ export const ModelConfigDialog: React.FC<ModelConfigDialogProps> = ({
           modelsList = await fetchDeepSeekModels(endpoint, apiKey);
           break;
         case 'gemini':
-          modelsList = await fetchGeminiModels();
+          modelsList = await fetchGeminiModels(endpoint, apiKey);
           break;
         default:
           // 默认使用 OpenAI 兼容的 API
@@ -123,11 +123,19 @@ export const ModelConfigDialog: React.FC<ModelConfigDialogProps> = ({
 
 
   // Gemini 模型获取
-  const fetchGeminiModels = async (): Promise<ModelInfo[]> => {
-    return [
-      { id: 'gemini-pro', name: 'Gemini Pro', description: '通用模型' },
-      { id: 'gemini-pro-vision', name: 'Gemini Pro Vision', description: '视觉模型' },
-    ];
+  const fetchGeminiModels = async (endpoint: string, key: string): Promise<ModelInfo[]> => {
+    const response = await fetch(`${endpoint}/models?key=${key}`);
+    if (!response.ok) throw new Error('Failed to fetch models');
+    const data = await response.json();
+
+    return (data.models || [])
+      // 过滤出 Gemini 模型，排除 embedding 等其他模型
+      .filter((m: any) => m.name.toLowerCase().includes('gemini'))
+      .map((m: any) => ({
+        id: m.name.replace('models/', ''),
+        name: m.displayName || m.name.replace('models/', ''),
+        description: m.description,
+      }));
   };
 
 
@@ -325,11 +333,10 @@ export const ModelConfigDialog: React.FC<ModelConfigDialogProps> = ({
           {/* 测试结果 */}
           {testResult && (
             <div
-              className={`p-3 rounded-md text-sm ${
-                testResult.success
-                  ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
-                  : 'border border-red-200 bg-red-50 text-red-800'
-              }`}
+              className={`p-3 rounded-md text-sm ${testResult.success
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
+                : 'border border-red-200 bg-red-50 text-red-800'
+                }`}
             >
               {testResult.message}
             </div>
