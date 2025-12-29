@@ -10,6 +10,7 @@ import { Select } from '~/components/ui/select';
 import { Badge } from '~/components/ui/badge';
 import { Switch } from '~/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import { HistoryTab } from '~/components/HistoryTab';
 
 // 预定义的通用模型配置
 const COMMON_MODELS = [
@@ -30,7 +31,7 @@ const COMMON_MODELS = [
 ];
 
 const OptionsApp = () => {
-  const [activeTab, setActiveTab] = useState<'models' | 'assistants'>('models');
+  const [activeTab, setActiveTab] = useState<'models' | 'assistants' | 'history'>('models');
   const [models, setModels] = useState<AIModel[]>([]);
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
@@ -180,6 +181,7 @@ const OptionsApp = () => {
           <TabsList>
             <TabsTrigger value="models">{t('模型提供商', 'Model Providers')}</TabsTrigger>
             <TabsTrigger value="assistants">{t('总结助手', 'Assistants')}</TabsTrigger>
+            <TabsTrigger value="history">{t('历史记录', 'History')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="models" className="border-none bg-transparent p-0 shadow-none">
@@ -391,6 +393,10 @@ const OptionsApp = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="border-none bg-transparent p-0 shadow-none">
+            <HistoryTab language={language} />
           </TabsContent>
         </Tabs>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { nanoid } from 'nanoid';
-import { StorageService, type ChatMessage, type AIModel, type Assistant } from '~/utils/storage';
+import { StorageService, type ChatMessage, type AIModel, type Assistant, type ConversationHistory } from '~/utils/storage';
 import { AIService } from '~/utils/ai-service';
 import { extractPageContent } from '~/utils/content-extractor';
 import ReactMarkdown from 'react-markdown';
@@ -201,7 +201,8 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const streamResponse = async (
     sendMessages: ChatMessage[],
     visibleMessages: ChatMessage[],
-    onErrorMessage: string
+    onErrorMessage: string,
+    historyContext?: { pageTitle: string; pageUrl: string; assistantName?: string }
   ) => {
     if (!selectedModel) {
       alert('Please configure an AI model first');
@@ -241,6 +242,22 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
           )
         );
       }
+
+      // Save conversation history after successful completion
+      if (assistantContent && historyContext) {
+        const finalMessages = [...visibleMessages, { ...assistantMessage, content: assistantContent }];
+        const historyRecord: ConversationHistory = {
+          id: nanoid(),
+          pageTitle: historyContext.pageTitle,
+          pageUrl: historyContext.pageUrl,
+          modelName: selectedModel.name,
+          modelId: selectedModel.id,
+          assistantName: historyContext.assistantName,
+          messages: finalMessages,
+          createdAt: Date.now(),
+        };
+        await StorageService.saveHistory(historyRecord);
+      }
     } catch (error) {
       if ((error as Error).name === 'AbortError') {
         return;
@@ -279,7 +296,12 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
         timestamp: Date.now(),
       };
 
-      await streamResponse([systemMessage, userMessage], [systemMessage, userMessage], 'Failed to summarize content');
+      await streamResponse(
+        [systemMessage, userMessage],
+        [systemMessage, userMessage],
+        'Failed to summarize content',
+        { pageTitle: pageContent.title, pageUrl: currentUrl, assistantName: 'Summarize' }
+      );
     } catch (error) {
       console.error('Summarize error:', error);
       alert(`Failed to summarize content: ${error instanceof Error ? error.message : String(error)}`);
@@ -315,7 +337,12 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       };
 
       // 只添加系统消息，不显示用户消息内容
-      await streamResponse([systemMessage, userMessage], [systemMessage], 'Failed to process with assistant');
+      await streamResponse(
+        [systemMessage, userMessage],
+        [systemMessage],
+        'Failed to process with assistant',
+        { pageTitle: pageContent.title, pageUrl: currentUrl, assistantName: assistant.name }
+      );
     } catch (error) {
       console.error('Assistant error:', error);
       alert(`Failed to process with assistant: ${error instanceof Error ? error.message : String(error)}`);
@@ -369,7 +396,13 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
           setMessages((prev) => [systemMessage, ...prev]);
         }
       }
-      await streamResponse(messagesToSend, visibleMessages, 'Failed to send message');
+      const pageInfo = await extractPageContent();
+      await streamResponse(
+        messagesToSend,
+        visibleMessages,
+        'Failed to send message',
+        { pageTitle: pageInfo?.title || document.title, pageUrl: currentUrl }
+      );
     } catch (error) {
       console.error('Send message error:', error);
       alert('Failed to send message');
@@ -435,7 +468,12 @@ ${originalText}`;
         timestamp: Date.now(),
       };
 
-      await streamResponse([systemMessage, userMessage], [systemMessage], 'Failed to analyze HackerNews discussion');
+      await streamResponse(
+        [systemMessage, userMessage],
+        [systemMessage],
+        'Failed to analyze HackerNews discussion',
+        { pageTitle: pageContent?.title || 'HackerNews Discussion', pageUrl: currentUrl, assistantName: 'HN Analyzer' }
+      );
     } catch (error) {
       console.error('Failed to analyze HN discussion:', error);
       alert('Failed to analyze discussion');

@@ -35,6 +35,17 @@ export interface Prompt {
   category: 'summary' | 'translation' | 'explanation' | 'custom';
 }
 
+export interface ConversationHistory {
+  id: string;
+  pageTitle: string;
+  pageUrl: string;
+  modelName: string;
+  modelId: string;
+  assistantName?: string;
+  messages: ChatMessage[];
+  createdAt: number;
+}
+
 export interface Assistant {
   id: string;
   name: string;
@@ -57,6 +68,7 @@ export const StorageKeys = {
   SELECTED_MODEL: 'selectedModel',
   COMMON_MODEL_CONFIGS: 'commonModelConfigs',
   ASSISTANTS: 'assistants',
+  HISTORY: 'conversationHistory',
 } as const;
 
 // Default prompts
@@ -311,5 +323,32 @@ export const StorageService = {
       assistant.updatedAt = Date.now();
       await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, assistants);
     }
+  },
+
+  // Conversation History
+  async getHistory(): Promise<ConversationHistory[]> {
+    const history = await storage.getItem<ConversationHistory[]>(
+      `local:${StorageKeys.HISTORY}`
+    );
+    return history || [];
+  },
+
+  async saveHistory(record: ConversationHistory): Promise<void> {
+    const history = await this.getHistory();
+    // Add to the beginning (newest first)
+    history.unshift(record);
+    // Limit to 100 records to prevent excessive storage usage
+    const limitedHistory = history.slice(0, 100);
+    await storage.setItem(`local:${StorageKeys.HISTORY}`, limitedHistory);
+  },
+
+  async deleteHistory(historyId: string): Promise<void> {
+    const history = await this.getHistory();
+    const filtered = history.filter((h) => h.id !== historyId);
+    await storage.setItem(`local:${StorageKeys.HISTORY}`, filtered);
+  },
+
+  async clearAllHistory(): Promise<void> {
+    await storage.setItem(`local:${StorageKeys.HISTORY}`, []);
   },
 };
