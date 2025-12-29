@@ -22,14 +22,21 @@ export default defineContentScript({
         root.id = 'homie-root';
         container.append(root);
 
+        const adjustPageLayout = (width: number) => {
+          document.body.style.transition = 'margin-right 0.3s ease-out';
+          document.body.style.marginRight = `${width}px`;
+        };
+
         // Render React component
         const reactRoot = createRoot(root);
-        reactRoot.render(<SummaryPanel />);
+        reactRoot.render(<SummaryPanel onWidthChange={adjustPageLayout} />);
 
-        return reactRoot;
+        return { reactRoot, adjustPageLayout };
       },
-      onRemove: (reactRoot) => {
-        reactRoot?.unmount();
+      onRemove: (mounted) => {
+        mounted?.reactRoot?.unmount();
+        document.body.style.marginRight = '0px';
+        document.body.style.removeProperty('transition');
       },
     });
 
