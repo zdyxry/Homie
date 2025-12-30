@@ -169,7 +169,7 @@ const OptionsApp = () => {
               <option value="zh">🇨🇳 中文</option>
               <option value="en">🇬🇧 English</option>
             </Select>
-            <Badge variant="secondary">v0.0.1</Badge>
+            <Badge variant="secondary">v{chrome.runtime.getManifest().version}</Badge>
           </div>
         </header>
 
