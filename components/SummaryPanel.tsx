@@ -56,6 +56,18 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
     searchHackerNews();
   }, []);
 
+  const loadPreviousConversation = async (url: string) => {
+    try {
+      const history = await StorageService.getHistoryByUrl(url);
+      if (history && history.messages.length > 0) {
+        setMessages(history.messages);
+        console.log('Loaded previous conversation for URL:', url);
+      }
+    } catch (error) {
+      console.error('Failed to load previous conversation:', error);
+    }
+  };
+
   const searchHackerNews = async () => {
     try {
       setIsSearchingHN(true);
@@ -67,6 +79,9 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
 
       if (response?.url) {
         setCurrentUrl(response.url);
+
+        // 加载该页面的历史对话
+        await loadPreviousConversation(response.url);
 
         // 搜索 HackerNews 讨论
         const hnResponse = await browser.runtime.sendMessage({
@@ -352,9 +367,6 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const handleSendMessage = async () => {
     if (!inputValue.trim() || !selectedModel || isLoading) return;
 
-    // 判断是否是第一条消息
-    const isFirstMessage = messages.length === 0;
-
     const userMessage: ChatMessage = {
       id: nanoid(),
       role: 'user',
@@ -362,46 +374,58 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       timestamp: Date.now(),
     };
 
+    // Optimistic UI update
     setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
 
     try {
-      // 如果是第一条消息，添加页面内容到上下文
-      let messagesToSend = [...messages, userMessage];
-      let visibleMessages: ChatMessage[] = [...messages, userMessage];
-
-      if (isFirstMessage) {
-        const pageContent = await extractPageContent();
-        if (pageContent) {
-          // 创建系统消息，告诉 AI 它可以访问页面内容
-          const systemMessage: ChatMessage = {
-            id: nanoid(),
-            role: 'system',
-            content: 'You are a helpful assistant with access to the current web page content. Use the provided page context to answer user questions accurately.',
-            timestamp: Date.now(),
-          };
-
-          // 创建包含页面内容的用户消息（用于发送给 AI）
-          const userMessageWithContext: ChatMessage = {
-            id: nanoid(),
-            role: 'user',
-            content: `Current page content:\n---\nTitle: ${pageContent.title}\n\n${pageContent.textContent}\n---\n\nUser question: ${inputValue}`,
-            timestamp: Date.now(),
-          };
-
-          messagesToSend = [systemMessage, userMessageWithContext];
-          visibleMessages = [systemMessage, userMessage];
-
-          // 将系统消息添加到 messages 中（但不会显示，因为有 filter）
-          setMessages((prev) => [systemMessage, ...prev]);
-        }
+      const pageContent = await extractPageContent();
+      if (!pageContent) {
+        throw new Error('Failed to extract page content');
       }
-      const pageInfo = await extractPageContent();
+
+      // Check for existing system message to preserve persona (e.g. specific assistant prompt)
+      const existingSystemMsg = messages.find(m => m.role === 'system');
+      const baseSystemPrompt = existingSystemMsg
+        ? existingSystemMsg.content
+        : 'You are a helpful assistant with access to the current web page content. Use the provided page context to answer user questions accurately.';
+
+      const systemMsgId = existingSystemMsg ? existingSystemMsg.id : nanoid();
+      const systemMsgTimestamp = existingSystemMsg ? existingSystemMsg.timestamp : Date.now();
+
+      // System message with context for LLM (Ephemeral, contains large context)
+      const systemMessageWithContext: ChatMessage = {
+        id: systemMsgId,
+        role: 'system',
+        content: `${baseSystemPrompt}\n\nCurrent page content:\n---\nTitle: ${pageContent.title}\n\n${pageContent.textContent}\n---`,
+        timestamp: systemMsgTimestamp,
+      };
+
+      // Clean system message for storage/UI (Persistent, specific prompt only)
+      const storageSystemMsg: ChatMessage = {
+        id: systemMsgId,
+        role: 'system',
+        content: baseSystemPrompt,
+        timestamp: systemMsgTimestamp,
+      };
+
+      const historyMessages = messages.filter(m => m.role !== 'system');
+
+      const messagesToSend = [systemMessageWithContext, ...historyMessages, userMessage];
+
+      // Ensure the visible conversation (and saved history) includes the clean system message
+      const visibleMessages = [storageSystemMsg, ...historyMessages, userMessage];
+
+      // If we created a new system message (first interaction), update UI state to include it
+      if (!existingSystemMsg) {
+        setMessages(prev => [storageSystemMsg, ...prev]);
+      }
+
       await streamResponse(
         messagesToSend,
         visibleMessages,
         'Failed to send message',
-        { pageTitle: pageInfo?.title || document.title, pageUrl: currentUrl }
+        { pageTitle: pageContent.title, pageUrl: currentUrl }
       );
     } catch (error) {
       console.error('Send message error:', error);

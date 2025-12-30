@@ -335,10 +335,14 @@ export const StorageService = {
 
   async saveHistory(record: ConversationHistory): Promise<void> {
     const history = await this.getHistory();
+    // Remove existing records with the same pageUrl to ensure we only keep the latest one
+    const filteredHistory = history.filter(h => h.pageUrl !== record.pageUrl);
+
     // Add to the beginning (newest first)
-    history.unshift(record);
+    filteredHistory.unshift(record);
+
     // Limit to 100 records to prevent excessive storage usage
-    const limitedHistory = history.slice(0, 100);
+    const limitedHistory = filteredHistory.slice(0, 100);
     await storage.setItem(`local:${StorageKeys.HISTORY}`, limitedHistory);
   },
 
@@ -350,5 +354,12 @@ export const StorageService = {
 
   async clearAllHistory(): Promise<void> {
     await storage.setItem(`local:${StorageKeys.HISTORY}`, []);
+  },
+
+  async getHistoryByUrl(url: string): Promise<ConversationHistory | null> {
+    const history = await this.getHistory();
+    // Find the most recent conversation for this URL
+    const match = history.find((h) => h.pageUrl === url);
+    return match || null;
   },
 };
