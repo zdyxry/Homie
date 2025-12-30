@@ -15,6 +15,7 @@ export default defineConfig({
     options_ui: {
       open_in_tab: true,
     },
+    key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwU/kiKs6I39izGAzMZl1+TnClF0ZJxvaESBZ5cKekA7jHj0LWtAXgd4oh+74hQWbD0tuAPLCglXPwOMuYUneOB8XJSV2y/xY3MS5XXKYvPBVw79/oveRQbiJqy3rO866sgllAbuFPwL0Imajt5wMylsiIe3ww89Y3W6dLbbYvcSgoB2R4o5pA7wa4Bp4ddo9aecHKMEgzOKgUay3PjHLeQWMo64HrJSDsIpQjZTtmxPJ5bUUaTtiG8wWKb4xIVFTbr9Wg2N5/MLHrMFMut6TLqSWJoj0aNcH/6yWwHyh5P87lIKkVYwJjbM1DU6xsBnaWjIK15J3Z0XKS/qWDMCcAwIDAQAB',
   },
   runner: {
     disabled: false,
