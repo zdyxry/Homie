@@ -20,8 +20,21 @@ export default defineConfig({
     disabled: false,
   },
   // Vite 服务器配置 - 监听所有网络接口以支持远程开发
-  vite: () => ({
+  vite: async () => ({
     plugins: [tailwindcss()],
+    css: {
+      postcss: {
+        plugins: [
+          (await import('postcss-rem-to-pixel')).default({
+            rootValue: 16,
+            propList: ['*'],
+            selectorBlackList: [],
+            mediaQuery: true,
+            minPixelValue: 1,
+          }),
+        ],
+      },
+    },
     server: {
       host: '127.0.0.1',
       strictPort: true,
