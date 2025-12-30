@@ -36,6 +36,7 @@
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
+    "postcss-rem-to-pixel": "^4.1.2",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.2",
     "wxt": "^0.19.15"
