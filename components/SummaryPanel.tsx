@@ -697,7 +697,8 @@ ${originalText}`;
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask Homie about this page..."
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                // Use Ctrl/Cmd + Enter to send to avoid IME commit triggering send.
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                   e.preventDefault();
                   handleSendMessage();
                 }
@@ -706,7 +707,7 @@ ${originalText}`;
 
             <div className="flex items-center justify-between gap-3">
               <div className="text-xs text-muted-foreground">
-                Enter to send · Shift + Enter for new line
+                Ctrl/Cmd + Enter to send · Enter for new line
               </div>
               <div className="flex items-center gap-2">
                 <Button
