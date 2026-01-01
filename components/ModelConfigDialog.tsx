@@ -253,14 +253,16 @@ export const ModelConfigDialog: React.FC<ModelConfigDialogProps> = ({
             <label className="mb-2 block text-sm font-medium text-foreground">
               API {t('密钥', 'Key')}
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <Input
+                className="flex-1 min-w-0"
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder={t('输入 API 密钥', 'Enter API key')}
               />
               <Button
+                className="whitespace-nowrap flex-none"
                 onClick={fetchModels}
                 disabled={!apiKey.trim() || isLoadingModels}
                 variant="primary"
