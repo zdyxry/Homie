@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { StorageService, type ConversationHistory } from '~/utils/storage';
 import { Button } from './ui/button';
+import CopyParagraphButton from './ui/copy-paragraph-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Select } from './ui/select';
@@ -20,6 +21,15 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ language }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedItem, setSelectedItem] = useState<ConversationHistory | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [enablePerParagraphCopy, setEnablePerParagraphCopy] = useState<boolean>(true);
+
+    useEffect(() => {
+        const load = async () => {
+            const v = await StorageService.getSetting<boolean>('perParagraphCopy', true);
+            setEnablePerParagraphCopy(v ?? true);
+        };
+        load();
+    }, []);
 
     const t = (zh: string, en: string) => (language === 'zh' ? zh : en);
 
@@ -334,7 +344,18 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, 
                                         <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
                                     </div>
                                     <div className="markdown-body prose prose-sm max-w-none text-foreground/90">
-                                        <ReactMarkdown>{message.content || '…'}</ReactMarkdown>
+                                        {(message.content || '…').split(/\n\s*\n/).map((para, i) => (
+                                            <div key={`${message.id}-p-${i}`} className="group relative mb-2">
+                                                {enablePerParagraphCopy && (
+                                                    <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <CopyParagraphButton text={para} />
+                                                    </div>
+                                                )}
+                                                <ReactMarkdown components={{ p: ({ node, ...props }) => <p {...props} className="mb-0" /> }}>
+                                                    {para}
+                                                </ReactMarkdown>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             ))}

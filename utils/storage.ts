@@ -362,4 +362,22 @@ export const StorageService = {
     const match = history.find((h) => h.pageUrl === url);
     return match || null;
   },
+
+  // Settings
+  async getSetting<T>(key: string, defaultValue?: T): Promise<T | undefined> {
+    const settings = await storage.getItem<Record<string, any>>(`local:${StorageKeys.SETTINGS}`);
+    if (!settings) return defaultValue;
+    return (settings[key] as T) ?? defaultValue;
+  },
+
+  async getSettings(): Promise<Record<string, any>> {
+    const settings = await storage.getItem<Record<string, any>>(`local:${StorageKeys.SETTINGS}`);
+    return settings || {};
+  },
+
+  async saveSetting(key: string, value: any): Promise<void> {
+    const settings = await this.getSettings();
+    settings[key] = value;
+    await storage.setItem(`local:${StorageKeys.SETTINGS}`, settings);
+  },
 };

@@ -31,7 +31,7 @@ const COMMON_MODELS = [
 ];
 
 const OptionsApp = () => {
-  const [activeTab, setActiveTab] = useState<'models' | 'assistants' | 'history'>('models');
+  const [activeTab, setActiveTab] = useState<'models' | 'assistants' | 'history' | 'settings'>('models');
   const [models, setModels] = useState<AIModel[]>([]);
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
@@ -40,6 +40,7 @@ const OptionsApp = () => {
   const [language, setLanguage] = useState<'zh' | 'en'>('zh');
   const [configuringProvider, setConfiguringProvider] = useState<typeof COMMON_MODELS[0] | null>(null);
   const [commonModelConfigs, setCommonModelConfigs] = useState<Record<string, Partial<AIModel>>>({});
+  const [perParagraphCopy, setPerParagraphCopy] = useState<boolean>(true);
 
   useEffect(() => {
     loadData();
@@ -55,6 +56,15 @@ const OptionsApp = () => {
     setModels(loadedModels);
     setAssistants(loadedAssistants);
     setSelectedModelId(selectedId);
+
+    // Load settings
+    const ppc = await StorageService.getSetting<boolean>('perParagraphCopy', true);
+    setPerParagraphCopy(ppc ?? true);
+  };
+
+  const handleSetPerParagraphCopy = async (value: boolean) => {
+    await StorageService.saveSetting('perParagraphCopy', value);
+    setPerParagraphCopy(value);
   };
 
   const loadCommonModelConfigs = async () => {
@@ -182,6 +192,7 @@ const OptionsApp = () => {
             <TabsTrigger value="models">{t('模型提供商', 'Model Providers')}</TabsTrigger>
             <TabsTrigger value="assistants">{t('总结助手', 'Assistants')}</TabsTrigger>
             <TabsTrigger value="history">{t('历史记录', 'History')}</TabsTrigger>
+            <TabsTrigger value="settings">{t('设置', 'Settings')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="models" className="border-none bg-transparent p-0 shadow-none">
@@ -397,6 +408,28 @@ const OptionsApp = () => {
 
           <TabsContent value="history" className="border-none bg-transparent p-0 shadow-none">
             <HistoryTab language={language} />
+          </TabsContent>
+
+          <TabsContent value="settings" className="border-none bg-transparent p-0 shadow-none">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('常规设置', 'General')}</CardTitle>
+                  <CardDescription>{t('界面与行为设置', 'UI and behavior')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="font-medium">{t('段落复制按钮', 'Per-paragraph copy buttons')}</div>
+                      <div className="text-sm text-muted-foreground">{t('在每个消息段落右上角显示复制按钮', 'Show a copy button at the top-right of each paragraph')}</div>
+                    </div>
+                    <div>
+                      <Switch checked={perParagraphCopy} onCheckedChange={handleSetPerParagraphCopy} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
