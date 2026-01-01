@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { AIModel } from '~/utils/storage';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -8,7 +8,7 @@ interface ModelConfigDialogProps {
     id: string;
     name: string;
     provider: string;
-    icon: string;
+    icon: ReactNode;
     color: string;
   };
   onClose: () => void;
