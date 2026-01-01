@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import browser from 'webextension-polyfill';
 import { RuntimeMessages } from '~/utils/messages';
 import { Button } from './ui/button';
+import CopyParagraphButton from './ui/copy-paragraph-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Select } from './ui/select';
@@ -49,6 +50,16 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const [hnDiscussion, setHnDiscussion] = useState<HackerNewsDiscussion | null>(null);
   const [isSearchingHN, setIsSearchingHN] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string>('');
+
+  // Per-paragraph copy setting
+  const [enablePerParagraphCopy, setEnablePerParagraphCopy] = useState<boolean>(true);
+  useEffect(() => {
+    const load = async () => {
+      const v = await StorageService.getSetting<boolean>('perParagraphCopy', true);
+      setEnablePerParagraphCopy(v ?? true);
+    };
+    load();
+  }, []);
 
   useEffect(() => {
     loadModel();
@@ -504,6 +515,7 @@ ${originalText}`;
     }
   };
 
+
   if (!isVisible) {
     return null;
   }
@@ -650,7 +662,22 @@ ${originalText}`;
                     <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
                   </div>
                   <div className="markdown-body text-sm leading-relaxed text-foreground/90">
-                    <ReactMarkdown>{message.content || '…'}</ReactMarkdown>
+                    {/* Render each paragraph separately and show a copy button on hover */}
+                    {(message.content || '…').split(/\n\s*\n/).map((para, i) => {
+                      const key = `${message.id}-p-${i}`;
+                      return (
+                        <div key={key} className="group relative mb-2">
+                          {enablePerParagraphCopy && (
+                            <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <CopyParagraphButton text={para} />
+                            </div>
+                          )}
+                          <ReactMarkdown components={{ p: ({ node, ...props }) => <p {...props} className="mb-0" /> }}>
+                            {para}
+                          </ReactMarkdown>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
