@@ -18,14 +18,14 @@ const COMMON_MODELS = [
     id: 'gemini',
     name: 'Gemini',
     provider: 'gemini',
-    icon: '🔷',
+    icon: <img src="/icons/gemini.svg" alt="Gemini" className="h-5 w-5 object-contain" />,
     color: '#4285F4'
   },
   {
     id: 'deepseek',
     name: 'DeepSeek',
     provider: 'deepseek',
-    icon: '🔍',
+    icon: <img src="/icons/deepseek.svg" alt="DeepSeek" className="h-5 w-5 object-contain" />,
     color: '#1890ff'
   },
 ];
