@@ -260,6 +260,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ language }) => {
                     item={selectedItem}
                     onClose={() => setSelectedItem(null)}
                     language={language}
+                    enablePerParagraphCopy={enablePerParagraphCopy}
                 />
             )}
         </div>
@@ -270,9 +271,10 @@ interface HistoryDetailModalProps {
     item: ConversationHistory;
     onClose: () => void;
     language: 'zh' | 'en';
+    enablePerParagraphCopy: boolean;
 }
 
-const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, language }) => {
+const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, language, enablePerParagraphCopy }) => {
     const t = (zh: string, en: string) => (language === 'zh' ? zh : en);
 
     const formatDate = (timestamp: number) => {
