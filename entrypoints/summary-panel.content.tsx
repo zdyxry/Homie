@@ -12,6 +12,9 @@ export default defineContentScript({
   async main(ctx) {
     console.log('Homie content script loaded');
 
+    // Pending async check id shared so onRemove can clear it
+    let _homiePendingCheck: number | null = null;
+
     // Create UI container
     const ui = await createShadowRootUi(ctx, {
       name: 'homie-panel',
@@ -22,9 +25,89 @@ export default defineContentScript({
         root.id = 'homie-root';
         container.append(root);
 
-        const adjustPageLayout = (width: number) => {
+        // Fallback-aware layout adjustment
+        // Strategy: Try width-based layout first (keeps centered `max-width` containers centered).
+        // After applying it, detect if a prominent centered element shifted noticeably. If so,
+        // revert to the legacy margin-right approach for compatibility with that page.
+
+        const findCenteredCandidate = (): HTMLElement | null => {
+          const els = Array.from(document.body.getElementsByTagName('*')) as HTMLElement[];
+          let best: HTMLElement | null = null;
+          let bestWidth = 0;
+          const minWidth = Math.max(200, window.innerWidth * 0.2);
+
+          for (const el of els) {
+            try {
+              const style = window.getComputedStyle(el);
+              if (style.marginLeft === 'auto' && style.marginRight === 'auto') {
+                const rect = el.getBoundingClientRect();
+                const w = rect.width;
+                if (w > bestWidth && w >= minWidth) {
+                  bestWidth = w;
+                  best = el;
+                }
+              }
+            } catch (err) {
+              // ignore cross-origin or other errors
+            }
+          }
+
+          return best;
+        };
+
+        const applyMarginLayout = (width: number) => {
+          // Legacy behavior: reserve space by shifting body content left with margin-right
+          document.body.style.removeProperty('width');
+          document.body.style.removeProperty('margin-left');
           document.body.style.transition = 'margin-right 0.3s ease-out';
           document.body.style.marginRight = `${width}px`;
+          if (_homiePendingCheck) {
+            clearTimeout(_homiePendingCheck);
+            _homiePendingCheck = null;
+          }
+        };
+
+        const applyWidthLayout = (width: number) => {
+          // Use width-based layout adjustment to preserve centered layouts on the page.
+          document.body.style.transition = 'width 0.3s ease-out, margin 0.3s ease-out';
+          document.body.style.width = `calc(100% - ${width}px)`;
+          document.body.style.marginLeft = 'auto';
+          document.body.style.marginRight = 'auto';
+
+          // Schedule detection check shortly after layout settles
+          if (_homiePendingCheck) {
+            clearTimeout(_homiePendingCheck);
+          }
+          const candidate = findCenteredCandidate();
+          if (!candidate) {
+            // no obvious centered element, skip detection
+            return;
+          }
+
+          const viewportCenter = window.innerWidth / 2;
+
+          _homiePendingCheck = window.setTimeout(() => {
+            _homiePendingCheck = null;
+            try {
+              const afterRect = candidate.getBoundingClientRect();
+              const afterCenter = afterRect.left + afterRect.width / 2;
+              const shift = Math.abs(afterCenter - viewportCenter);
+              const threshold = Math.max(12, window.innerWidth * 0.02); // px or 2% of width
+
+              if (shift > threshold) {
+                // Detected an unexpected shift — fall back to margin approach
+                console.warn('Homie: centered content shifted by', shift, 'px after width layout; applying fallback margin layout.');
+                applyMarginLayout(width);
+              }
+            } catch (err) {
+              // ignore
+            }
+          }, 120);
+        };
+
+        const adjustPageLayout = (width: number) => {
+          // Prefer width-based layout but allow fall back
+          applyWidthLayout(width);
         };
 
         // Render React component
@@ -33,9 +116,16 @@ export default defineContentScript({
 
         return { reactRoot, adjustPageLayout };
       },
-      onRemove: (mounted) => {
+      onRemove: (mounted: any) => {
         mounted?.reactRoot?.unmount();
-        document.body.style.marginRight = '0px';
+        // Restore original layout styles
+        if (_homiePendingCheck !== null) {
+          clearTimeout(_homiePendingCheck);
+          _homiePendingCheck = null;
+        }
+        document.body.style.removeProperty('width');
+        document.body.style.removeProperty('margin-left');
+        document.body.style.removeProperty('margin-right');
         document.body.style.removeProperty('transition');
       },
     });
