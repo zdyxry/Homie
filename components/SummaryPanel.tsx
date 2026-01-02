@@ -643,10 +643,8 @@ ${originalText}`;
                 <div
                   key={message.id}
                   className={cn(
-                    'rounded-2xl border px-4 py-3 shadow-sm backdrop-blur transition-colors',
-                    message.role === 'assistant'
-                      ? 'border-border bg-muted/70'
-                      : 'border-primary/30 bg-primary/10'
+                    'rounded-2xl px-4 py-3 shadow-sm backdrop-blur transition-colors',
+                    message.role === 'assistant' ? 'bg-muted/70' : 'bg-primary/10'
                   )}
                 >
                   <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
