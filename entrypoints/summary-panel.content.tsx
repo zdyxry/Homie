@@ -71,8 +71,8 @@ export default defineContentScript({
           // Use width-based layout adjustment to preserve centered layouts on the page.
           document.body.style.transition = 'width 0.3s ease-out, margin 0.3s ease-out';
           document.body.style.width = `calc(100% - ${width}px)`;
-          document.body.style.marginLeft = 'auto';
-          document.body.style.marginRight = 'auto';
+          document.body.style.marginLeft = '0';
+          document.body.style.marginRight = `${width}px`;
 
           // Schedule detection check shortly after layout settles
           if (_homiePendingCheck) {
