@@ -3,7 +3,23 @@ import { cn } from '~/utils/cn';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type = 'text', ...props }, ref) => {
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type = 'text', onKeyDown, onKeyUp, onKeyPress, ...props }, ref) => {
+  // Prevent keyboard events from bubbling to the page to avoid triggering page shortcuts
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    onKeyDown?.(e);
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    onKeyUp?.(e);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    onKeyPress?.(e);
+  };
+
   return (
     <input
       type={type}
@@ -12,6 +28,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className
         className
       )}
       ref={ref}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
+      onKeyPress={handleKeyPress}
       {...props}
     />
   );
