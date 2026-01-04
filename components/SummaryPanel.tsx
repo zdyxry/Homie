@@ -50,6 +50,8 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const [hnDiscussion, setHnDiscussion] = useState<HackerNewsDiscussion | null>(null);
   const [isSearchingHN, setIsSearchingHN] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string>('');
+  const [debugContext, setDebugContext] = useState<string>('');
+  const [isDebugVisible, setIsDebugVisible] = useState(false);
 
   // Per-paragraph copy setting
   const [enablePerParagraphCopy, setEnablePerParagraphCopy] = useState<boolean>(true);
@@ -322,6 +324,8 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
         timestamp: Date.now(),
       };
 
+      setDebugContext(`System: ${systemMessage.content}\n\nUser: ${userMessage.content}`);
+
       await streamResponse(
         [systemMessage, userMessage],
         [systemMessage, userMessage],
@@ -361,6 +365,8 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
         content: userPromptContent,
         timestamp: Date.now(),
       };
+
+      setDebugContext(`System: ${systemMessage.content}\n\nUser: ${userMessage.content}`);
 
       // 只添加系统消息，不显示用户消息内容
       await streamResponse(
@@ -411,6 +417,10 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
         content: `${baseSystemPrompt}\n\nCurrent page content:\n---\nTitle: ${pageContent.title}\n\n${pageContent.textContent}\n---`,
         timestamp: systemMsgTimestamp,
       };
+
+      if (!existingSystemMsg) {
+        setDebugContext(systemMessageWithContext.content);
+      }
 
       // Clean system message for storage/UI (Persistent, specific prompt only)
       const storageSystemMsg: ChatMessage = {
@@ -503,6 +513,8 @@ ${originalText}`;
         timestamp: Date.now(),
       };
 
+      setDebugContext(`System: ${systemMessage.content}\n\nUser: ${userMessage.content}`);
+
       await streamResponse(
         [systemMessage, userMessage],
         [systemMessage],
@@ -538,6 +550,18 @@ ${originalText}`;
         <header className="flex items-center justify-between border-b border-border/80 px-6 py-4">
           <div className="text-lg font-semibold text-foreground">Homie</div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDebugVisible(true)}
+              title="View request context"
+              className={cn("text-muted-foreground/50 hover:text-foreground transition-colors", !debugContext && "opacity-0 pointer-events-none")}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleOpenSettings} title="Settings">
               <span className="text-lg">⚙️</span>
             </Button>
@@ -546,6 +570,30 @@ ${originalText}`;
             </Button>
           </div>
         </header>
+
+        {isDebugVisible && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px] animate-in fade-in duration-200">
+            <div className="relative flex h-[80%] w-[90%] flex-col overflow-hidden rounded-xl bg-white shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+              <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                  <h3 className="text-sm font-medium text-foreground">Raw Context Debug</h3>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsDebugVisible(false)}>
+                  <span className="text-lg">×</span>
+                </Button>
+              </div>
+              <div className="flex-1 overflow-auto bg-slate-50 p-4">
+                <pre className="whitespace-pre-wrap text-xs text-slate-700 font-mono leading-relaxed select-text">
+                  {debugContext || 'No context available yet.'}
+                </pre>
+              </div>
+            </div>
+          </div>
+        )}
 
         {hnDiscussion && (
           <div className="border-b border-border/70 bg-orange-50 px-6 py-3">
