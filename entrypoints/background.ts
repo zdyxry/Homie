@@ -63,7 +63,7 @@ export default defineBackground(() => {
       case RuntimeMessages.OPEN_OPTIONS:
         // Use chrome.tabs.create to open options page in a new tab
         browser.tabs.create({
-          url: browser.runtime.getURL('options.html')
+          url: browser.runtime.getURL('settings.html')
         });
         sendResponse({ success: true });
         break;
