@@ -19,6 +19,6 @@
       "~/*": ["./*"]
     }
   },
-  "include": ["entrypoints", "components", "wxt.config.ts", "utils", ".wxt"],
+  "include": ["entrypoints", "components", "utils", ".wxt"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

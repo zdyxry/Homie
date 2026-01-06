@@ -12,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Textarea } from './ui/textarea';
 import { Select } from './ui/select';
 import { Badge } from './ui/badge';
-import { Switch } from './ui/switch';
 import { cn } from '~/utils/cn';
 
 interface HackerNewsDiscussion {
@@ -39,7 +38,6 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const [enabledAssistants, setEnabledAssistants] = useState<Assistant[]>([]);
   const [panelWidth, setPanelWidth] = useState(600);
   const [isResizing, setIsResizing] = useState(false);
-  const [shouldStop, setShouldStop] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
   const autoScrollRef = useRef(true);
   const shouldStopRef = useRef(false);
@@ -55,10 +53,13 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
 
   // Per-paragraph copy setting
   const [enablePerParagraphCopy, setEnablePerParagraphCopy] = useState<boolean>(true);
+  const [sendKey, setSendKey] = useState<'enter' | 'ctrl-enter'>('ctrl-enter');
   useEffect(() => {
     const load = async () => {
       const v = await StorageService.getSetting<boolean>('perParagraphCopy', true);
       setEnablePerParagraphCopy(v ?? true);
+      const sk = await StorageService.getSetting<'enter' | 'ctrl-enter'>('sendKey', 'ctrl-enter');
+      setSendKey(sk ?? 'ctrl-enter');
     };
     load();
   }, []);
@@ -88,7 +89,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       // 获取当前标签页的 URL
       const response = await browser.runtime.sendMessage({
         type: RuntimeMessages.GET_TAB_INFO,
-      });
+      }) as { url: string };
 
       if (response?.url) {
         setCurrentUrl(response.url);
@@ -100,7 +101,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
         const hnResponse = await browser.runtime.sendMessage({
           type: RuntimeMessages.SEARCH_HACKERNEWS,
           payload: response.url,
-        });
+        }) as { success: boolean, discussion: HackerNewsDiscussion };
 
         if (hnResponse?.success && hnResponse.discussion) {
           setHnDiscussion(hnResponse.discussion);
@@ -221,7 +222,6 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   };
 
   const stopStreaming = () => {
-    setShouldStop(true);
     shouldStopRef.current = true;
     abortControllerRef.current?.abort();
   };
@@ -241,7 +241,6 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
-    setShouldStop(false);
     shouldStopRef.current = false;
     setIsLoading(true);
     setAutoScroll(true);
@@ -479,7 +478,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
           storyId: hnDiscussion.storyId,
           originalUrl: currentUrl,
         },
-      });
+      }) as { success: boolean, discussionText: string };
 
       if (!response?.success || !response.discussionText) {
         alert('Failed to fetch discussion comments');
@@ -770,17 +769,26 @@ ${originalText}`;
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask Homie about this page..."
               onKeyDown={(e) => {
-                // Use Ctrl/Cmd + Enter to send to avoid IME commit triggering send.
-                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                  e.preventDefault();
-                  handleSendMessage();
+                if (sendKey === 'enter') {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                } else {
+                  // Use Ctrl/Cmd + Enter to send to avoid IME commit triggering send.
+                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
                 }
               }}
             />
 
             <div className="flex items-center justify-between gap-3">
               <div className="text-xs text-muted-foreground">
-                Ctrl/Cmd + Enter to send · Enter for new line
+                {sendKey === 'enter'
+                  ? 'Enter to send · Shift + Enter for new line'
+                  : 'Ctrl/Cmd + Enter to send · Enter for new line'}
               </div>
               <div className="flex items-center gap-2">
                 <Button

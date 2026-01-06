@@ -34,13 +34,13 @@ const OptionsApp = () => {
   const [activeTab, setActiveTab] = useState<'models' | 'assistants' | 'history' | 'settings'>('models');
   const [models, setModels] = useState<AIModel[]>([]);
   const [assistants, setAssistants] = useState<Assistant[]>([]);
-  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [editingModel, setEditingModel] = useState<AIModel | null>(null);
   const [editingAssistant, setEditingAssistant] = useState<Assistant | null>(null);
   const [language, setLanguage] = useState<'zh' | 'en'>('zh');
   const [configuringProvider, setConfiguringProvider] = useState<typeof COMMON_MODELS[0] | null>(null);
   const [commonModelConfigs, setCommonModelConfigs] = useState<Record<string, Partial<AIModel>>>({});
   const [perParagraphCopy, setPerParagraphCopy] = useState<boolean>(true);
+  const [sendKey, setSendKey] = useState<'enter' | 'ctrl-enter'>('ctrl-enter');
 
   useEffect(() => {
     loadData();
@@ -48,23 +48,29 @@ const OptionsApp = () => {
   }, []);
 
   const loadData = async () => {
-    const [loadedModels, loadedAssistants, selectedId] = await Promise.all([
+    const [loadedModels, loadedAssistants] = await Promise.all([
       StorageService.getModels(),
       StorageService.getAssistants(),
       StorageService.getSelectedModel(),
     ]);
     setModels(loadedModels);
     setAssistants(loadedAssistants);
-    setSelectedModelId(selectedId);
 
     // Load settings
     const ppc = await StorageService.getSetting<boolean>('perParagraphCopy', true);
     setPerParagraphCopy(ppc ?? true);
+    const sk = await StorageService.getSetting<'enter' | 'ctrl-enter'>('sendKey', 'ctrl-enter');
+    setSendKey(sk ?? 'ctrl-enter');
   };
 
   const handleSetPerParagraphCopy = async (value: boolean) => {
     await StorageService.saveSetting('perParagraphCopy', value);
     setPerParagraphCopy(value);
+  };
+
+  const handleSetSendKey = async (value: 'enter' | 'ctrl-enter') => {
+    await StorageService.saveSetting('sendKey', value);
+    setSendKey(value);
   };
 
   const loadCommonModelConfigs = async () => {
@@ -138,11 +144,6 @@ const OptionsApp = () => {
       await StorageService.deleteModel(modelId);
       await loadData();
     }
-  };
-
-  const handleSelectModel = async (modelId: string) => {
-    await StorageService.setSelectedModel(modelId);
-    setSelectedModelId(modelId);
   };
 
   const handleNewModel = () => {
@@ -417,7 +418,7 @@ const OptionsApp = () => {
                   <CardTitle>{t('常规设置', 'General')}</CardTitle>
                   <CardDescription>{t('界面与行为设置', 'UI and behavior')}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="font-medium">{t('段落复制按钮', 'Per-paragraph copy buttons')}</div>
@@ -425,6 +426,22 @@ const OptionsApp = () => {
                     </div>
                     <div>
                       <Switch checked={perParagraphCopy} onCheckedChange={handleSetPerParagraphCopy} />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="font-medium">{t('发送消息快捷键', 'Send message shortcut')}</div>
+                      <div className="text-sm text-muted-foreground">{t('选择用于发送消息的快捷键', 'Choose the shortcut to send messages')}</div>
+                    </div>
+                    <div>
+                      <Select
+                        value={sendKey}
+                        onChange={(e) => handleSetSendKey(e.target.value as 'enter' | 'ctrl-enter')}
+                        className="w-44"
+                      >
+                        <option value="ctrl-enter">Ctrl + Enter</option>
+                        <option value="enter">Enter</option>
+                      </Select>
                     </div>
                   </div>
                 </CardContent>
