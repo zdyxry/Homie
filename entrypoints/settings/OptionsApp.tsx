@@ -41,6 +41,7 @@ const OptionsApp = () => {
   const [commonModelConfigs, setCommonModelConfigs] = useState<Record<string, Partial<AIModel>>>({});
   const [perParagraphCopy, setPerParagraphCopy] = useState<boolean>(true);
   const [sendKey, setSendKey] = useState<'enter' | 'ctrl-enter'>('ctrl-enter');
+  const [autoFocusInput, setAutoFocusInput] = useState<boolean>(true);
 
   useEffect(() => {
     loadData();
@@ -61,6 +62,8 @@ const OptionsApp = () => {
     setPerParagraphCopy(ppc ?? true);
     const sk = await StorageService.getSetting<'enter' | 'ctrl-enter'>('sendKey', 'ctrl-enter');
     setSendKey(sk ?? 'ctrl-enter');
+    const afi = await StorageService.getSetting<boolean>('autoFocusInput', true);
+    setAutoFocusInput(afi ?? true);
   };
 
   const handleSetPerParagraphCopy = async (value: boolean) => {
@@ -71,6 +74,11 @@ const OptionsApp = () => {
   const handleSetSendKey = async (value: 'enter' | 'ctrl-enter') => {
     await StorageService.saveSetting('sendKey', value);
     setSendKey(value);
+  };
+
+  const handleSetAutoFocusInput = async (value: boolean) => {
+    await StorageService.saveSetting('autoFocusInput', value);
+    setAutoFocusInput(value);
   };
 
   const loadCommonModelConfigs = async () => {
@@ -442,6 +450,15 @@ const OptionsApp = () => {
                         <option value="ctrl-enter">Ctrl + Enter</option>
                         <option value="enter">Enter</option>
                       </Select>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="font-medium">{t('自动聚焦输入框', 'Auto-focus input box')}</div>
+                      <div className="text-sm text-muted-foreground">{t('打开侧边栏时自动聚焦输入框', 'Auto-focus the input box when opening the sidebar')}</div>
+                    </div>
+                    <div>
+                      <Switch checked={autoFocusInput} onCheckedChange={handleSetAutoFocusInput} />
                     </div>
                   </div>
                 </CardContent>
