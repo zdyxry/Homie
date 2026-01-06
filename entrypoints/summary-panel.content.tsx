@@ -1,8 +1,10 @@
+/// <reference types="wxt/vite-builder-env" />
 import '@/assets/summary-panel.css';
 import { createRoot } from 'react-dom/client';
 import SummaryPanel from '~/components/SummaryPanel';
 import browser from 'webextension-polyfill';
 import { RuntimeMessages, isRuntimeMessage } from '~/utils/messages';
+import { defineContentScript } from 'wxt/sandbox';
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -16,10 +18,11 @@ export default defineContentScript({
     let _homiePendingCheck: number | null = null;
 
     // Create UI container
+    // @ts-ignore
     const ui = await createShadowRootUi(ctx, {
       name: 'homie-panel',
       position: 'inline',
-      onMount: (container) => {
+      onMount: (container: any) => {
         // Create root element
         const root = document.createElement('div');
         root.id = 'homie-root';
@@ -131,9 +134,9 @@ export default defineContentScript({
     });
 
     // Listen for messages from background script
-    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (!isRuntimeMessage(message)) {
-        return false;
+        return true;
       }
 
       console.log('Content script received message:', message);
@@ -157,7 +160,7 @@ export default defineContentScript({
         console.error('Error handling message:', error);
         sendResponse({ success: false, error: String(error) });
       }
-      return true; // Keep the message channel open for async response
+      return true;
     });
 
     // Don't auto-mount, wait for user action

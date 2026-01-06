@@ -1,6 +1,8 @@
 // Background service worker for Homie
+/// <reference types="wxt/vite-builder-env" />
+import { defineBackground } from 'wxt/sandbox';
 import browser from 'webextension-polyfill';
-import { RuntimeMessages, type RuntimeMessage } from '~/utils/messages';
+import { RuntimeMessages, type RuntimeMessage, isRuntimeMessage } from '~/utils/messages';
 import { findHackerNewsDiscussion, getHackerNewsDiscussionText } from '~/utils/hackernews';
 
 export default defineBackground(() => {
@@ -44,8 +46,8 @@ export default defineBackground(() => {
 
   // Handle messages from content scripts
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (!message || typeof message !== 'object' || !(message as RuntimeMessage).type) {
-      return false;
+    if (!isRuntimeMessage(message)) {
+      return true;
     }
 
     console.log('Background received message:', message);
@@ -117,7 +119,6 @@ export default defineBackground(() => {
       default:
         break;
     }
-
-    return true; // Keep message channel open for async response
+    return true;
   });
 });
