@@ -45,6 +45,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [hnDiscussion, setHnDiscussion] = useState<HackerNewsDiscussion | null>(null);
   const [isSearchingHN, setIsSearchingHN] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string>('');
@@ -54,15 +55,24 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   // Per-paragraph copy setting
   const [enablePerParagraphCopy, setEnablePerParagraphCopy] = useState<boolean>(true);
   const [sendKey, setSendKey] = useState<'enter' | 'ctrl-enter'>('ctrl-enter');
+  const [autoFocusInput, setAutoFocusInput] = useState<boolean>(true);
   useEffect(() => {
     const load = async () => {
       const v = await StorageService.getSetting<boolean>('perParagraphCopy', true);
       setEnablePerParagraphCopy(v ?? true);
       const sk = await StorageService.getSetting<'enter' | 'ctrl-enter'>('sendKey', 'ctrl-enter');
       setSendKey(sk ?? 'ctrl-enter');
+      const afi = await StorageService.getSetting<boolean>('autoFocusInput', true);
+      setAutoFocusInput(afi ?? true);
     };
     load();
   }, []);
+
+  useEffect(() => {
+    if (autoFocusInput && availableModels.length > 0) {
+      textareaRef.current?.focus();
+    }
+  }, [autoFocusInput, availableModels]);
 
   useEffect(() => {
     loadModel();
@@ -765,6 +775,7 @@ ${originalText}`;
             </Select>
 
             <Textarea
+              ref={textareaRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask Homie about this page..."
