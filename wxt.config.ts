@@ -1,5 +1,6 @@
 import { defineConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
+import tailwindConfig from './tailwind.config';
 
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
@@ -23,7 +24,7 @@ export default defineConfig({
   },
   // Vite 服务器配置 - 监听所有网络接口以支持远程开发
   vite: async () => ({
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss({ config: tailwindConfig })],
     css: {
       postcss: {
         plugins: [
