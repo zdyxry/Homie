@@ -333,12 +333,43 @@ export const StorageService = {
 
   // Assistants
   async getAssistants(): Promise<Assistant[]> {
-    let assistants = await storage.getItem<Assistant[]>(`local:${StorageKeys.ASSISTANTS}`);
-    if (!assistants || assistants.length === 0) {
-      assistants = DEFAULT_ASSISTANTS;
-      await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, assistants);
+    const storedAssistants =
+      (await storage.getItem<Assistant[]>(`local:${StorageKeys.ASSISTANTS}`)) || [];
+
+    // If no assistants are stored, initialize with defaults
+    if (storedAssistants.length === 0) {
+      await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, DEFAULT_ASSISTANTS);
+      return DEFAULT_ASSISTANTS;
     }
-    return assistants;
+
+    const storedAssistantsMap = new Map(storedAssistants.map((a) => [a.id, a]));
+    const userCustomAssistants = storedAssistants.filter((a) => !a.isBuiltIn);
+
+    // Update built-in assistants from the default list
+    const updatedDefaultAssistants = DEFAULT_ASSISTANTS.map((defaultAssistant) => {
+      const existingAssistant = storedAssistantsMap.get(defaultAssistant.id);
+      // If a built-in assistant already exists, preserve its `enabled` state
+      if (existingAssistant && existingAssistant.isBuiltIn) {
+        return {
+          ...defaultAssistant,
+          enabled: existingAssistant.enabled,
+        };
+      }
+      return defaultAssistant;
+    });
+
+    const finalAssistants = [...updatedDefaultAssistants, ...userCustomAssistants];
+
+    // Only update storage if the merged list is different from the stored one
+    // A simple JSON.stringify comparison is sufficient here
+    if (
+      JSON.stringify(finalAssistants.sort((a, b) => a.id.localeCompare(b.id))) !==
+      JSON.stringify(storedAssistants.sort((a, b) => a.id.localeCompare(b.id)))
+    ) {
+      await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, finalAssistants);
+    }
+
+    return finalAssistants;
   },
 
   async saveAssistant(assistant: Assistant): Promise<void> {
