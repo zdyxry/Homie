@@ -544,27 +544,27 @@ ${originalText}`;
   return (
     <div
       ref={panelRef}
-      className="homie-fixed homie-inset-y-0 homie-right-0 homie-z-[2147483647] homie-flex"
+      className="fixed inset-y-0 right-0 z-[2147483647] flex"
       style={{ width: `${panelWidth}px` }}
     >
       <div
-        className="homie-absolute homie--left-1 homie-top-0 homie-h-full homie-w-3 homie-cursor-ew-resize homie-bg-transparent homie-transition-colors hover:homie-bg-primary/40"
+        className="absolute -left-1 top-0 h-full w-3 cursor-ew-resize bg-transparent transition-colors hover:bg-primary/40"
         onMouseDown={() => setIsResizing(true)}
       />
 
       <div
-        className="homie-relative homie-flex homie-h-full homie-w-full homie-flex-col homie-overflow-hidden homie-bg-white homie-shadow-2xl"
+        className="relative flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl"
         style={{ borderLeft: '1px solid #6b7280' }}
       >
-        <header className="homie-flex homie-items-center homie-justify-between homie-border-b homie-border-border/80 homie-px-6 homie-py-4">
-          <div className="homie-text-lg homie-font-semibold homie-text-foreground">Homie</div>
-          <div className="homie-flex homie-items-center homie-gap-2">
+        <header className="flex items-center justify-between border-b border-border/80 px-6 py-4">
+          <div className="text-lg font-semibold text-foreground">Homie</div>
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsDebugVisible(true)}
               title="View request context"
-              className={cn("homie-text-muted-foreground/50 hover:homie-text-foreground homie-transition-colors", !debugContext && "homie-opacity-0 homie-pointer-events-none")}
+              className={cn("text-muted-foreground/50 hover:text-foreground transition-colors", !debugContext && "opacity-0 pointer-events-none")}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="16 18 22 12 16 6"></polyline>
@@ -572,31 +572,31 @@ ${originalText}`;
               </svg>
             </Button>
             <Button variant="ghost" size="icon" onClick={handleOpenSettings} title="Settings">
-              <span className="homie-text-lg">⚙️</span>
+              <span className="text-lg">⚙️</span>
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setIsVisible(false)} title="Close panel">
-              <span className="homie-text-xl">×</span>
+              <span className="text-xl">×</span>
             </Button>
           </div>
         </header>
 
         {isDebugVisible && (
-          <div className="homie-absolute homie-inset-0 homie-z-50 homie-flex homie-items-center homie-justify-center homie-bg-black/40 homie-backdrop-blur-[1px] homie-animate-in homie-fade-in homie-duration-200">
-            <div className="homie-relative homie-flex homie-h-[80%] homie-w-[90%] homie-flex-col homie-overflow-hidden homie-rounded-xl homie-bg-white homie-shadow-2xl homie-animate-in homie-zoom-in-95 homie-duration-200 homie-border homie-border-white/20">
-              <div className="homie-flex homie-items-center homie-justify-between homie-border-b homie-px-4 homie-py-3 homie-bg-muted/30">
-                <div className="homie-flex homie-items-center homie-gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="homie-text-muted-foreground">
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px] animate-in fade-in duration-200">
+            <div className="relative flex h-[80%] w-[90%] flex-col overflow-hidden rounded-xl bg-white shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+              <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
                     <polyline points="16 18 22 12 16 6"></polyline>
                     <polyline points="8 6 2 12 8 18"></polyline>
                   </svg>
-                  <h3 className="homie-text-sm homie-font-medium homie-text-foreground">Raw Context Debug</h3>
+                  <h3 className="text-sm font-medium text-foreground">Raw Context Debug</h3>
                 </div>
-                <Button variant="ghost" size="icon" className="homie-h-8 homie-w-8" onClick={() => setIsDebugVisible(false)}>
-                  <span className="homie-text-lg">×</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsDebugVisible(false)}>
+                  <span className="text-lg">×</span>
                 </Button>
               </div>
-              <div className="homie-flex-1 homie-overflow-auto homie-bg-slate-50 homie-p-4">
-                <pre className="homie-whitespace-pre-wrap homie-text-xs homie-text-slate-700 homie-font-mono homie-leading-relaxed homie-select-text">
+              <div className="flex-1 overflow-auto bg-slate-50 p-4">
+                <pre className="whitespace-pre-wrap text-xs text-slate-700 font-mono leading-relaxed select-text">
                   {debugContext || 'No context available yet.'}
                 </pre>
               </div>
@@ -605,29 +605,29 @@ ${originalText}`;
         )}
 
         {hnDiscussion && (
-          <div className="homie-border-b homie-border-border/70 homie-bg-orange-50 homie-px-6 homie-py-3">
-            <div className="homie-flex homie-items-start homie-gap-3">
-              <span className="homie-text-2xl">🔥</span>
-              <div className="homie-flex-1">
-                <div className="homie-mb-1 homie-text-sm homie-font-medium homie-text-orange-900">
+          <div className="border-b border-border/70 bg-orange-50 px-6 py-3">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">🔥</span>
+              <div className="flex-1">
+                <div className="mb-1 text-sm font-medium text-orange-900">
                   HackerNews Discussion Found
                 </div>
                 <a
                   href={hnDiscussion.discussionUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="homie-text-sm homie-text-orange-700 hover:homie-text-orange-900 hover:homie-underline"
+                  className="text-sm text-orange-700 hover:text-orange-900 hover:underline"
                 >
                   {hnDiscussion.title}
                 </a>
-                <div className="homie-mt-1 homie-flex homie-items-center homie-gap-3 homie-text-xs homie-text-orange-600">
+                <div className="mt-1 flex items-center gap-3 text-xs text-orange-600">
                   <span>👍 {hnDiscussion.points} points</span>
                   <span>💬 {hnDiscussion.numComments} comments</span>
                   <span>by {hnDiscussion.author}</span>
                   <span
                     className={cn(
-                      "homie-cursor-pointer hover:homie-text-orange-900 hover:homie-underline homie-font-medium",
-                      (isLoading || !selectedModel) && "homie-opacity-50 homie-cursor-not-allowed"
+                      "cursor-pointer hover:text-orange-900 hover:underline font-medium",
+                      (isLoading || !selectedModel) && "opacity-50 cursor-not-allowed"
                     )}
                     onClick={() => {
                       if (!isLoading && selectedModel) {
@@ -644,17 +644,17 @@ ${originalText}`;
         )}
 
         {isSearchingHN && !hnDiscussion && (
-          <div className="homie-border-b homie-border-border/70 homie-bg-gray-50 homie-px-6 homie-py-3">
-            <div className="homie-flex homie-items-center homie-gap-2 homie-text-sm homie-text-gray-600">
-              <span className="homie-animate-spin">⏳</span>
+          <div className="border-b border-border/70 bg-gray-50 px-6 py-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="animate-spin">⏳</span>
               <span>Searching HackerNews...</span>
             </div>
           </div>
         )}
 
-        <div className="homie-border-b homie-border-border/70 homie-bg-muted/40 homie-px-6 homie-py-4">
+        <div className="border-b border-border/70 bg-muted/40 px-6 py-4">
           {enabledAssistants.length > 0 && messages.length === 0 && (
-            <div className="homie-flex homie-flex-wrap homie-gap-2">
+            <div className="flex flex-wrap gap-2">
               {enabledAssistants.map((assistant) => (
                 <Button
                   key={assistant.id}
@@ -662,27 +662,27 @@ ${originalText}`;
                   size="sm"
                   disabled={isLoading || !selectedModel}
                   onClick={() => handleAssistantClick(assistant)}
-                  className="homie-rounded-full homie-border homie-border-primary/40 homie-bg-primary/5 homie-text-primary hover:homie--translate-y-[1px] hover:homie-border-primary/60 hover:homie-bg-primary/10 hover:homie-shadow-sm homie-transition"
+                  className="rounded-full border border-primary/40 bg-primary/5 text-primary hover:-translate-y-[1px] hover:border-primary/60 hover:bg-primary/10 hover:shadow-sm transition"
                   aria-label={`Run assistant ${assistant.name}`}
                 >
-                  <span className="homie-text-base">{assistant.icon}</span>
-                  <span className="homie-text-xs homie-font-medium">{assistant.name}</span>
+                  <span className="text-base">{assistant.icon}</span>
+                  <span className="text-xs font-medium">{assistant.name}</span>
                 </Button>
               ))}
             </div>
           )}
         </div>
 
-        <div ref={contentRef} className="scroll-area homie-flex-1 homie-overflow-y-auto homie-px-6 homie-py-4">
+        <div ref={contentRef} className="scroll-area flex-1 overflow-y-auto px-6 py-4">
           {messages.length === 0 && enabledAssistants.length === 0 && (
-            <Card className="homie-border-dashed">
+            <Card className="border-dashed">
               <CardHeader>
                 <CardTitle>Ready when you are</CardTitle>
                 <CardDescription>
                   Ask anything about this page or start with a quick summary.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="homie-flex homie-flex-wrap homie-gap-3">
+              <CardContent className="flex flex-wrap gap-3">
                 <Button onClick={handleSummarize} disabled={!selectedModel || isLoading}>
                   Summarize this page
                 </Button>
@@ -693,41 +693,41 @@ ${originalText}`;
             </Card>
           )}
 
-          <div className="homie-flex homie-flex-col homie-gap-3">
+          <div className="flex flex-col gap-3">
             {messages
               .filter((msg) => msg.role !== 'system')
               .map((message) => (
                 <div
                   key={message.id}
                   className={cn(
-                    'homie-rounded-2xl homie-px-4 homie-py-3 homie-shadow-sm homie-backdrop-blur homie-transition-colors',
-                    message.role === 'assistant' ? 'homie-bg-muted/70' : 'homie-bg-primary/10'
+                    'rounded-2xl px-4 py-3 shadow-sm backdrop-blur transition-colors',
+                    message.role === 'assistant' ? 'bg-muted/70' : 'bg-primary/10'
                   )}
                 >
-                  <div className="homie-mb-2 homie-flex homie-items-center homie-justify-between homie-text-xs homie-text-muted-foreground">
-                    <div className="homie-flex homie-items-center homie-gap-2">
+                  <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
                       <span
                         className={cn(
-                          'homie-h-2 homie-w-2 homie-rounded-full',
-                          message.role === 'assistant' ? 'homie-bg-emerald-500' : 'homie-bg-primary'
+                          'h-2 w-2 rounded-full',
+                          message.role === 'assistant' ? 'bg-emerald-500' : 'bg-primary'
                         )}
                       />
-                      <span className="homie-font-medium homie-capitalize">{message.role}</span>
+                      <span className="font-medium capitalize">{message.role}</span>
                     </div>
                     <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
                   </div>
-                  <div className="markdown-body homie-text-sm homie-leading-relaxed homie-text-foreground/90">
+                  <div className="markdown-body text-sm leading-relaxed text-foreground/90">
                     {/* Render each paragraph separately and show a copy button on hover */}
                     {(message.content || '…').split(/\n\s*\n/).map((para, i) => {
                       const key = `${message.id}-p-${i}`;
                       return (
-                        <div key={key} className="homie-group homie-relative homie-mb-2">
+                        <div key={key} className="group relative mb-2">
                           {enablePerParagraphCopy && (
-                            <div className="homie-absolute homie-right-0 homie-top-0 homie-opacity-0 group-hover:homie-opacity-100 homie-transition-opacity">
+                            <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
                               <CopyParagraphButton text={para} />
                             </div>
                           )}
-                          <ReactMarkdown components={{ p: ({ node, ...props }) => <p {...props} className="homie-mb-0" /> }}>
+                          <ReactMarkdown components={{ p: ({ node, ...props }) => <p {...props} className="mb-0" /> }}>
                             {para}
                           </ReactMarkdown>
                         </div>
@@ -742,10 +742,10 @@ ${originalText}`;
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="homie-border-t homie-border-border/80 homie-bg-white/90 homie-px-6 homie-py-4 homie-backdrop-blur">
-          <div className="homie-mb-3 homie-flex homie-flex-wrap homie-items-center homie-justify-between homie-gap-3">
-            <div className="homie-flex homie-items-center homie-gap-2">
-              <span className="homie-text-xs homie-uppercase homie-tracking-[0.08em] homie-text-muted-foreground">Model</span>
+        <div className="border-t border-border/80 bg-white/90 px-6 py-4 backdrop-blur">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Model</span>
               <Badge variant="outline">{selectedModel ? selectedModel.name : 'Not set'}</Badge>
             </div>
             {messages.length > 0 && (
@@ -755,7 +755,7 @@ ${originalText}`;
             )}
           </div>
 
-          <div className="homie-grid homie-gap-3">
+          <div className="grid gap-3">
             <Select
               value={selectedModel?.id || ''}
               onChange={(e) => {
@@ -795,13 +795,13 @@ ${originalText}`;
               }}
             />
 
-            <div className="homie-flex homie-items-center homie-justify-between homie-gap-3">
-              <div className="homie-text-xs homie-text-muted-foreground">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-xs text-muted-foreground">
                 {sendKey === 'enter'
                   ? 'Enter to send · Shift + Enter for new line'
                   : 'Ctrl/Cmd + Enter to send · Enter for new line'}
               </div>
-              <div className="homie-flex homie-items-center homie-gap-2">
+              <div className="flex items-center gap-2">
                 <Button
                   variant={isLoading ? 'destructive' : 'primary'}
                   onClick={() => {

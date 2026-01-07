@@ -16,7 +16,8 @@
 }
 
 @layer base {
-  :host, #homie-root {
+  :host,
+  #homie-root {
     --background: 210 40% 98%;
     --foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
@@ -49,6 +50,11 @@
   #homie-root textarea,
   #homie-root select {
     font-family: inherit;
+  }
+  #homie-root :where(*, ::before, ::after) {
+    border-width: 0;
+    border-style: solid;
+    border-color: hsl(var(--border));
   }
 }
 

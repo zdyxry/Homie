@@ -28,7 +28,7 @@ const CopyParagraphButton: React.FC<Props> = ({ text }) => {
       title={copied ? 'Copied' : 'Copy paragraph'}
       onClick={handleCopy}
     >
-      <span className="homie-text-sm">{copied ? '✅' : '📋'}</span>
+      <span className="text-sm">{copied ? '✅' : '📋'}</span>
     </Button>
   );
 };
