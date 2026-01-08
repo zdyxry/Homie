@@ -126,6 +126,13 @@ const OptionsApp = () => {
     }
   };
 
+  const handleResetAssistant = async (assistantId: string) => {
+    if (confirm(language === 'zh' ? '确定要重置此助手吗？' : 'Are you sure you want to reset this assistant?')) {
+      await StorageService.resetAssistant(assistantId);
+      await loadData();
+    }
+  };
+
   const handleNewAssistant = () => {
     setEditingAssistant({
       id: nanoid(),
@@ -335,6 +342,9 @@ const OptionsApp = () => {
                           <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-foreground">{assistant.name}</h3>
                             <Badge variant="secondary">{t('预设', 'Preset')}</Badge>
+                            {assistant.isModifiedByUser && (
+                              <Badge variant="outline">{t('已修改', 'Modified')}</Badge>
+                            )}
                           </div>
                           <p className="text-sm text-muted-foreground">{assistant.description}</p>
                         </div>
@@ -347,6 +357,11 @@ const OptionsApp = () => {
                         <Button variant="ghost" size="sm" onClick={() => setEditingAssistant(assistant)}>
                           {t('设置', 'Settings')}
                         </Button>
+                        {assistant.isModifiedByUser && (
+                          <Button variant="ghost" size="sm" onClick={() => handleResetAssistant(assistant.id)}>
+                            {t('重置', 'Reset')}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
