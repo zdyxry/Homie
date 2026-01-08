@@ -190,12 +190,12 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ language }) => {
                                     {paginatedHistory.map((item) => (
                                         <tr
                                             key={item.id}
-                                            className="cursor-pointer transition-colors hover:bg-muted/40"
+                                            className="h-16 cursor-pointer transition-colors hover:bg-muted/40"
                                             onClick={() => setSelectedItem(item)}
                                         >
-                                            <td className="px-4 py-3">
-                                                <div className="font-medium text-foreground">{item.pageTitle || t('无标题', 'Untitled')}</div>
-                                                <div className="text-xs text-muted-foreground" title={item.pageUrl}>
+                                            <td className="max-w-xs px-4 py-3">
+                                                <div className="truncate font-medium text-foreground">{item.pageTitle || t('无标题', 'Untitled')}</div>
+                                                <div className="truncate text-xs text-muted-foreground" title={item.pageUrl}>
                                                     {truncateUrl(item.pageUrl)}
                                                 </div>
                                             </td>
