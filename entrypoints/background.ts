@@ -115,7 +115,27 @@ export default defineBackground(() => {
         })();
         return true; // Keep message channel open for async response
         break;
-
+        case 'GET_ALL_TABS':
+          (async () => {
+            const tabs = await browser.tabs.query({ currentWindow: true });
+            sendResponse(tabs);
+          })();
+          return true;
+        case 'GET_TAB_CONTENT':
+          (async () => {
+            const { tabId } = message.payload as { tabId: number };
+            try {
+              const result = await browser.scripting.executeScript({
+                target: { tabId },
+                func: () => document.body.innerText,
+              });
+              sendResponse({ success: true, content: result[0].result });
+            } catch (error: any) {
+              console.error(`Failed to get content from tab ${tabId}:`, error);
+              sendResponse({ success: false, error: error.message });
+            }
+          })();
+          return true;
       default:
         break;
     }

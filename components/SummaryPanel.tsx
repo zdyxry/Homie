@@ -8,6 +8,7 @@ import browser from 'webextension-polyfill';
 import { RuntimeMessages } from '~/utils/messages';
 import { Button } from './ui/button';
 import CopyParagraphButton from './ui/copy-paragraph-button';
+import { MultiTabAnalysis } from './MultiTabAnalysis';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Select } from './ui/select';
@@ -467,6 +468,18 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
     setMessages([]);
   };
 
+  const handleAnalysisComplete = (summary: string) => {
+    const combinedMessage = `${summary}\n\nUser Prompt: "${inputValue}"`;
+    const userMessage: ChatMessage = {
+      id: nanoid(),
+      role: 'user',
+      content: combinedMessage,
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue('');
+  };
+
   const handleOpenSettings = () => {
     // Send message to background script to open options page
     browser.runtime.sendMessage({ type: RuntimeMessages.OPEN_OPTIONS });
@@ -672,6 +685,8 @@ ${originalText}`;
             </div>
           )}
         </div>
+
+        <MultiTabAnalysis userInput={inputValue} onAnalysisComplete={handleAnalysisComplete} />
 
         <div ref={contentRef} className="scroll-area flex-1 overflow-y-auto px-6 py-4">
           {messages.length === 0 && enabledAssistants.length === 0 && (

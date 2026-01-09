@@ -7,7 +7,7 @@ export default defineConfig({
     name: '__MSG_app_name__',
     description: '__MSG_app_description__',
     default_locale: 'en',
-    permissions: ['activeTab', 'storage', 'unlimitedStorage', 'alarms'],
+    permissions: ['activeTab', 'storage', 'unlimitedStorage', 'alarms', 'tabs', 'scripting'],
     host_permissions: ['<all_urls>'],
     action: {
       default_title: 'Homie',
