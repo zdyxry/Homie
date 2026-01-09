@@ -47,7 +47,7 @@ export interface ConversationHistory {
 }
 
 export interface Assistant {
-  id: string;
+  id:string;
   name: string;
   description: string;
   icon: string;
@@ -55,6 +55,7 @@ export interface Assistant {
   userPrompt: string;
   enabled: boolean;
   isBuiltIn: boolean;
+  isModifiedByUser?: boolean;
   createdAt: number;
   updatedAt: number;
 }
@@ -333,22 +334,73 @@ export const StorageService = {
 
   // Assistants
   async getAssistants(): Promise<Assistant[]> {
-    let assistants = await storage.getItem<Assistant[]>(`local:${StorageKeys.ASSISTANTS}`);
-    if (!assistants || assistants.length === 0) {
-      assistants = DEFAULT_ASSISTANTS;
-      await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, assistants);
+    const storedAssistants =
+      (await storage.getItem<Assistant[]>(`local:${StorageKeys.ASSISTANTS}`)) || [];
+
+    // If no assistants are stored, initialize with defaults
+    if (storedAssistants.length === 0) {
+      await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, DEFAULT_ASSISTANTS);
+      return DEFAULT_ASSISTANTS;
     }
-    return assistants;
+
+    const storedAssistantsMap = new Map(storedAssistants.map((a) => [a.id, a]));
+    const userCustomAssistants = storedAssistants.filter((a) => !a.isBuiltIn);
+
+    // Update built-in assistants from the default list
+    const updatedDefaultAssistants = DEFAULT_ASSISTANTS.map((defaultAssistant) => {
+      const existingAssistant = storedAssistantsMap.get(defaultAssistant.id);
+
+      // If a built-in assistant exists and is modified, keep it as is
+      if (existingAssistant?.isBuiltIn && existingAssistant?.isModifiedByUser) {
+        return existingAssistant;
+      }
+
+      // If a built-in assistant exists but is not modified, update it but preserve its `enabled` state
+      if (existingAssistant?.isBuiltIn) {
+        return {
+          ...defaultAssistant,
+          enabled: existingAssistant.enabled,
+        };
+      }
+
+      // Otherwise, return the default assistant (for new built-in assistants)
+      return defaultAssistant;
+    });
+
+    const finalAssistants = [...updatedDefaultAssistants, ...userCustomAssistants];
+
+    // Only update storage if the merged list is different from the stored one
+    if (
+      JSON.stringify(finalAssistants.sort((a, b) => a.id.localeCompare(b.id))) !==
+      JSON.stringify(storedAssistants.sort((a, b) => a.id.localeCompare(b.id)))
+    ) {
+      await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, finalAssistants);
+    }
+
+    return finalAssistants;
   },
 
   async saveAssistant(assistant: Assistant): Promise<void> {
     const assistants = await this.getAssistants();
     const index = assistants.findIndex((a) => a.id === assistant.id);
+
+    // Check if a built-in assistant is being modified
+    if (assistant.isBuiltIn) {
+      const defaultAssistant = DEFAULT_ASSISTANTS.find((a) => a.id === assistant.id);
+      const isModified =
+        JSON.stringify(assistant, Object.keys(assistant).sort()) !==
+        JSON.stringify(defaultAssistant, Object.keys(defaultAssistant || {}).sort());
+
+      // Set the modification flag
+      assistant.isModifiedByUser = isModified;
+    }
+
     if (index >= 0) {
       assistants[index] = { ...assistant, updatedAt: Date.now() };
     } else {
       assistants.push({ ...assistant, createdAt: Date.now(), updatedAt: Date.now() });
     }
+
     await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, assistants);
   },
 
@@ -366,6 +418,31 @@ export const StorageService = {
       assistant.updatedAt = Date.now();
       await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, assistants);
     }
+  },
+
+  async resetAssistant(assistantId: string): Promise<void> {
+    const assistants = await this.getAssistants();
+    const assistantIndex = assistants.findIndex((a) => a.id === assistantId);
+
+    if (assistantIndex === -1) {
+      return; // Assistant not found
+    }
+
+    const defaultAssistant = DEFAULT_ASSISTANTS.find((a) => a.id === assistantId);
+
+    if (!defaultAssistant) {
+      return; // Not a built-in assistant
+    }
+
+    // Preserve the enabled state
+    const enabledState = assistants[assistantIndex].enabled;
+    assistants[assistantIndex] = {
+      ...defaultAssistant,
+      enabled: enabledState,
+      isModifiedByUser: false, // Reset the modified flag
+    };
+
+    await storage.setItem(`local:${StorageKeys.ASSISTANTS}`, assistants);
   },
 
   // Conversation History
