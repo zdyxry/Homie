@@ -1,22 +1,79 @@
 @import "tailwindcss";
 @source "../components/**/*.{ts,tsx}" "../entrypoints/**/*.{ts,tsx}" "../utils/**/*.{ts,tsx}";
 
+/*
+ * Style isolation for the Shadow DOM host element.
+ * The :host element is the shadow root container and can be affected
+ * by host page styles. We reset it to prevent visual inconsistencies.
+ */
+:host {
+  all: initial;
+  display: block;
+  /* Keep host styling isolated from the shadow tree */
+  contain: content;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
 #homie-root {
   all: initial;
   display: block;
   font-family: "Inter", "Space Grotesk", system-ui, -apple-system, sans-serif;
+  font-size: 16px;
   line-height: 1.5;
   color: hsl(var(--foreground));
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-shadow: none;
+  filter: none;
+  opacity: 1;
+  visibility: visible;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #homie-root *,
 #homie-root *::before,
 #homie-root *::after {
   box-sizing: border-box;
+  /* Normalize borders without killing focus rings (keep outlines intact) */
+  border-width: 0;
+  border-style: solid;
+  border-color: hsl(var(--border));
+}
+
+/* Ensure consistent focus affordance inside the shadow root */
+#homie-root :focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Reset link styles */
+#homie-root a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* Reset SVG styles */
+#homie-root svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Reset image styles */
+#homie-root img {
+  border: none;
+  max-width: 100%;
+  height: auto;
 }
 
 @layer base {
-  :host, #homie-root {
+  /* CSS Custom Properties for design system */
+  /* Define tokens on #homie-root so host-page CSS variables can't override them */
+  #homie-root {
     --background: 210 40% 98%;
     --foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
@@ -49,6 +106,7 @@
   #homie-root textarea,
   #homie-root select {
     font-family: inherit;
+    color: inherit;
   }
 }
 
@@ -123,6 +181,17 @@
     margin-bottom: 0.5rem;
   }
 
+  /* Restore semantic list styling for markdown (avoid global ul/ol resets) */
+  #homie-root .markdown-body ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+
+  #homie-root .markdown-body ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+  }
+
   #homie-root .markdown-body a {
     color: hsl(var(--primary));
     text-decoration: underline;
@@ -134,4 +203,41 @@
     border-radius: 0.4rem;
     font-size: 0.85em;
   }
+}
+
+/* Normalize common UA borders inside markdown without breaking focus styles */
+#homie-root .markdown-body :where(hr, table, th, td) {
+  border-width: 0;
+}
+
+/* Style blockquote with left border using box-shadow instead of border */
+#homie-root .markdown-body blockquote {
+  margin: 0.5rem 0;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.03);
+  box-shadow: inset 3px 0 0 0 #94a3b8;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Message bubble styling: keep it consistent without inline styles */
+#homie-root .message-bubble {
+  border: 0;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+@supports (backdrop-filter: blur(8px)) {
+  #homie-root .message-bubble {
+    backdrop-filter: blur(8px);
+  }
+}
+
+#homie-root .message-bubble--assistant {
+  background-color: hsl(var(--muted) / 0.7);
+}
+
+#homie-root .message-bubble--user {
+  background-color: hsl(var(--primary) / 0.1);
 }
