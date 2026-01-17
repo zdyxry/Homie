@@ -700,8 +700,8 @@ ${originalText}`;
                 <div
                   key={message.id}
                   className={cn(
-                    'message-bubble transition-colors',
-                    message.role === 'assistant' ? 'message-bubble--assistant' : 'message-bubble--user'
+                    'rounded-2xl px-4 py-3 shadow-sm backdrop-blur transition-colors',
+                    message.role === 'assistant' ? 'bg-muted/70' : 'bg-primary/10'
                   )}
                 >
                   <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
