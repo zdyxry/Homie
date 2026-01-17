@@ -699,31 +699,24 @@ ${originalText}`;
               .map((message) => (
                 <div
                   key={message.id}
-                  className="transition-colors"
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    borderRadius: '16px',
-                    padding: '12px 16px',
-                    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
-                    backdropFilter: 'blur(8px)',
-                    backgroundColor: message.role === 'assistant' ? 'rgba(241, 245, 249, 0.7)' : 'rgba(59, 130, 246, 0.1)',
-                  }}
+                  className={cn(
+                    'message-bubble transition-colors',
+                    message.role === 'assistant' ? 'message-bubble--assistant' : 'message-bubble--user'
+                  )}
                 >
-                  <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground" style={{ border: 'none' }}>
-                    <div className="flex items-center gap-2" style={{ border: 'none' }}>
+                  <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
                       <span
                         className={cn(
                           'h-2 w-2 rounded-full',
                           message.role === 'assistant' ? 'bg-emerald-500' : 'bg-primary'
                         )}
-                        style={{ border: 'none' }}
                       />
-                      <span className="font-medium capitalize" style={{ border: 'none' }}>{message.role}</span>
+                      <span className="font-medium capitalize">{message.role}</span>
                     </div>
-                    <span style={{ border: 'none' }}>{new Date(message.timestamp).toLocaleTimeString()}</span>
+                    <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
                   </div>
-                  <div className="markdown-body text-sm leading-relaxed text-foreground/90" style={{ border: 'none' }}>
+                  <div className="markdown-body text-sm leading-relaxed text-foreground/90">
                     {/* Render each paragraph separately and show a copy button on hover */}
                     {(message.content || '…').split(/\n\s*\n/).map((para, i) => {
                       const key = `${message.id}-p-${i}`;
