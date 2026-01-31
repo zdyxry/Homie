@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { nanoid } from 'nanoid';
 import { StorageService, type ChatMessage, type AIModel, type Assistant, type ConversationHistory } from '~/utils/storage';
-import { AIService } from '~/utils/ai-service';
+import { AIService, type TruncationInfo } from '~/utils/ai-service';
 import { extractPageContent } from '~/utils/content-extractor';
 import ReactMarkdown from 'react-markdown';
 import browser from 'webextension-polyfill';
@@ -51,6 +51,8 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const [currentUrl, setCurrentUrl] = useState<string>('');
   const [debugContext, setDebugContext] = useState<string>('');
   const [isDebugVisible, setIsDebugVisible] = useState(false);
+  const [truncationInfo, setTruncationInfo] = useState<TruncationInfo | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Per-paragraph copy setting
   const [enablePerParagraphCopy, setEnablePerParagraphCopy] = useState<boolean>(true);
@@ -243,7 +245,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
     historyContext?: { pageTitle: string; pageUrl: string; assistantName?: string }
   ) => {
     if (!selectedModel) {
-      alert('Please configure an AI model first');
+      setErrorMessage('请先配置 AI 模型');
       return;
     }
 
@@ -254,6 +256,8 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
     shouldStopRef.current = false;
     setIsLoading(true);
     setAutoScroll(true);
+    setTruncationInfo(null);
+    setErrorMessage(null);
 
     const aiService = new AIService(selectedModel);
     let assistantContent = '';
@@ -268,16 +272,34 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
     setMessages([...visibleMessages, assistantMessage]);
 
     try {
-      for await (const token of aiService.chatStream(sendMessages, abortController.signal)) {
+      for await (const result of aiService.chatStream(sendMessages, abortController.signal)) {
         if (abortController.signal.aborted || shouldStopRef.current) {
           break;
         }
-        assistantContent += token;
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantMessage.id ? { ...msg, content: assistantContent } : msg
-          )
-        );
+
+        // 处理错误
+        if (result.error) {
+          setErrorMessage(result.error.message);
+          // 移除正在生成的消息
+          setMessages((prev) => prev.filter((msg) => msg.id !== assistantMessage.id));
+          return;
+        }
+
+        // 处理截断信息
+        if (result.truncationInfo) {
+          setTruncationInfo(result.truncationInfo);
+          continue;
+        }
+
+        // 处理正常 token
+        if (result.token) {
+          assistantContent += result.token;
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id ? { ...msg, content: assistantContent } : msg
+            )
+          );
+        }
       }
 
       // Save conversation history after successful completion
@@ -300,7 +322,9 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
         return;
       }
       console.error('Streaming error:', error);
-      alert(onErrorMessage);
+      setErrorMessage(error instanceof Error ? error.message : onErrorMessage);
+      // 移除正在生成的消息
+      setMessages((prev) => prev.filter((msg) => msg.id !== assistantMessage.id));
     } finally {
       setIsLoading(false);
     }
@@ -315,7 +339,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       console.log('Page content extracted:', pageContent);
 
       if (!pageContent) {
-        alert('Failed to extract page content');
+        setErrorMessage('无法提取页面内容，请刷新页面后重试');
         return;
       }
 
@@ -343,7 +367,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       );
     } catch (error) {
       console.error('Summarize error:', error);
-      alert(`Failed to summarize content: ${error instanceof Error ? error.message : String(error)}`);
+      setErrorMessage(`总结失败: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
@@ -351,7 +375,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
     try {
       const pageContent = await extractPageContent();
       if (!pageContent) {
-        alert('Failed to extract page content');
+        setErrorMessage('无法提取页面内容，请刷新页面后重试');
         return;
       }
 
@@ -386,7 +410,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       );
     } catch (error) {
       console.error('Assistant error:', error);
-      alert(`Failed to process with assistant: ${error instanceof Error ? error.message : String(error)}`);
+      setErrorMessage(`助手处理失败: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
@@ -459,12 +483,14 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       );
     } catch (error) {
       console.error('Send message error:', error);
-      alert('Failed to send message');
+      setErrorMessage(`发送消息失败: ${error instanceof Error ? error.message : '请检查网络连接后重试'}`);
     }
   };
 
   const handleClearMessages = () => {
     setMessages([]);
+    setTruncationInfo(null);
+    setErrorMessage(null);
   };
 
   const handleOpenSettings = () => {
@@ -474,7 +500,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
 
   const handleAnalyzeHNDiscussion = async () => {
     if (!hnDiscussion || !selectedModel) {
-      alert('Unable to analyze discussion');
+      setErrorMessage('无法分析讨论：未找到 HackerNews 讨论或模型未配置');
       return;
     }
 
@@ -491,7 +517,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
       }) as { success: boolean, discussionText: string };
 
       if (!response?.success || !response.discussionText) {
-        alert('Failed to fetch discussion comments');
+        setErrorMessage('无法获取 HackerNews 讨论内容，请稍后重试');
         return;
       }
 
@@ -532,7 +558,7 @@ ${originalText}`;
       );
     } catch (error) {
       console.error('Failed to analyze HN discussion:', error);
-      alert('Failed to analyze discussion');
+      setErrorMessage(`分析讨论失败: ${error instanceof Error ? error.message : '请检查网络连接后重试'}`);
     }
   };
 
@@ -579,6 +605,52 @@ ${originalText}`;
             </Button>
           </div>
         </header>
+
+        {/* 错误提示 */}
+        {errorMessage && (
+          <div className="border-b border-red-200 bg-red-50 px-6 py-3 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex items-start gap-3">
+              <span className="text-lg">⚠️</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-red-800">出错了</div>
+                <div className="text-sm text-red-600 mt-1">{errorMessage}</div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 text-red-400 hover:text-red-600"
+                onClick={() => setErrorMessage(null)}
+              >
+                <span className="text-lg leading-none">×</span>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* 截断提示 */}
+        {truncationInfo?.wasTruncated && (
+          <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex items-start gap-3">
+              <span className="text-lg">✂️</span>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-amber-800">内容已截断</div>
+                <div className="text-xs text-amber-600 mt-1">
+                  页面内容超出模型限制，已自动截断部分内容后重新发送。
+                  原始长度: {truncationInfo.originalLength.toLocaleString()} 字符，
+                  截断后: {truncationInfo.truncatedLength.toLocaleString()} 字符。
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 text-amber-400 hover:text-amber-600"
+                onClick={() => setTruncationInfo(null)}
+              >
+                <span className="text-lg leading-none">×</span>
+              </Button>
+            </div>
+          </div>
+        )}
 
         {isDebugVisible && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px] animate-in fade-in duration-200">
