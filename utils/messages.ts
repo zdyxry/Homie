@@ -4,7 +4,9 @@ export type RuntimeMessageType =
   | 'GET_TAB_INFO'
   | 'OPEN_OPTIONS'
   | 'SEARCH_HACKERNEWS'
-  | 'FETCH_HACKERNEWS_COMMENTS';
+  | 'FETCH_HACKERNEWS_COMMENTS'
+  | 'GET_ALL_TABS'
+  | 'GET_TAB_CONTENT';
 
 export interface RuntimeMessage<T extends RuntimeMessageType = RuntimeMessageType> {
   type: T;
@@ -18,6 +20,8 @@ export const RuntimeMessages: Record<RuntimeMessageType, RuntimeMessageType> = {
   OPEN_OPTIONS: 'OPEN_OPTIONS',
   SEARCH_HACKERNEWS: 'SEARCH_HACKERNEWS',
   FETCH_HACKERNEWS_COMMENTS: 'FETCH_HACKERNEWS_COMMENTS',
+  GET_ALL_TABS: 'GET_ALL_TABS',
+  GET_TAB_CONTENT: 'GET_TAB_CONTENT',
 };
 
 export function isRuntimeMessage(value: unknown): value is RuntimeMessage {
