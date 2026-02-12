@@ -104,8 +104,21 @@ export async function findHackerNewsDiscussion(pageUrl: string) {
     return null;
   }
 
-  // 返回第一个结果（通常是最相关的）
-  const topStory = result.hits[0];
+  // 按评论数降序排序，寻找评论最多的帖子
+  const sortedHits = [...result.hits].sort((a, b) => {
+    // 优先按评论数排序
+    if (b.num_comments !== a.num_comments) {
+      return (b.num_comments || 0) - (a.num_comments || 0);
+    }
+    // 评论数相同时，按分数排序
+    if (b.points !== a.points) {
+      return (b.points || 0) - (a.points || 0);
+    }
+    // 分数也相同时，按创建时间排序（最新的优先）
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  const topStory = sortedHits[0];
 
   return {
     storyId: topStory.objectID,
