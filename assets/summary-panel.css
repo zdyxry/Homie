@@ -134,4 +134,39 @@
     border-radius: 0.4rem;
     font-size: 0.85em;
   }
+
+  #homie-root .markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid hsl(var(--border));
+    font-size: 0.875rem;
+  }
+
+  #homie-root .markdown-body th,
+  #homie-root .markdown-body td {
+    border: 1px solid hsl(var(--border));
+    padding: 0.625rem 0.875rem;
+    text-align: left;
+  }
+
+  #homie-root .markdown-body th {
+    background-color: hsl(var(--muted) / 0.8);
+    font-weight: 600;
+    color: hsl(var(--foreground));
+  }
+
+  #homie-root .markdown-body tr:nth-child(even) {
+    background-color: hsl(var(--muted) / 0.3);
+  }
+
+  #homie-root .markdown-body blockquote {
+    border-left: 4px solid hsl(var(--border));
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-right: 0;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+  }
 }

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { StorageService, type ConversationHistory } from '~/utils/storage';
 import { Button } from './ui/button';
-import CopyParagraphButton from './ui/copy-paragraph-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Select } from './ui/select';
 import { Badge } from './ui/badge';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface HistoryTabProps {
     language: 'zh' | 'en';
@@ -21,14 +23,9 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ language }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedItem, setSelectedItem] = useState<ConversationHistory | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [enablePerParagraphCopy, setEnablePerParagraphCopy] = useState<boolean>(true);
 
     useEffect(() => {
-        const load = async () => {
-            const v = await StorageService.getSetting<boolean>('perParagraphCopy', true);
-            setEnablePerParagraphCopy(v ?? true);
-        };
-        load();
+        loadHistory();
     }, []);
 
     const t = (zh: string, en: string) => (language === 'zh' ? zh : en);
@@ -260,7 +257,6 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ language }) => {
                     item={selectedItem}
                     onClose={() => setSelectedItem(null)}
                     language={language}
-                    enablePerParagraphCopy={enablePerParagraphCopy}
                 />
             )}
         </div>
@@ -271,10 +267,9 @@ interface HistoryDetailModalProps {
     item: ConversationHistory;
     onClose: () => void;
     language: 'zh' | 'en';
-    enablePerParagraphCopy: boolean;
 }
 
-const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, language, enablePerParagraphCopy }) => {
+const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, language }) => {
     const t = (zh: string, en: string) => (language === 'zh' ? zh : en);
 
     const formatDate = (timestamp: number) => {
@@ -346,18 +341,42 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, 
                                         <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
                                     </div>
                                     <div className="markdown-body prose prose-sm max-w-none text-foreground/90">
-                                        {(message.content || '…').split(/\n\s*\n/).map((para, i) => (
-                                            <div key={`${message.id}-p-${i}`} className="group relative mb-2">
-                                                {enablePerParagraphCopy && (
-                                                    <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <CopyParagraphButton text={para} />
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                code({ node, className, children, ...props }: any) {
+                                                    const match = /language-(\w+)/.exec(className || '');
+                                                    return match ? (
+                                                        <SyntaxHighlighter
+                                                            style={vscDarkPlus}
+                                                            language={match[1]}
+                                                            PreTag="div"
+                                                            {...props}
+                                                        >
+                                                            {String(children).replace(/\n$/, '')}
+                                                        </SyntaxHighlighter>
+                                                    ) : (
+                                                        <code className={className} {...props}>
+                                                            {children}
+                                                        </code>
+                                                    );
+                                                },
+                                                table: ({ node, ...props }) => (
+                                                    <div className="my-4 overflow-x-auto">
+                                                        <table className="min-w-full divide-y divide-border border border-border" {...props} />
                                                     </div>
-                                                )}
-                                                <ReactMarkdown components={{ p: ({ node, ...props }) => <p {...props} className="mb-0" /> }}>
-                                                    {para}
-                                                </ReactMarkdown>
-                                            </div>
-                                        ))}
+                                                ),
+                                                thead: ({ node, ...props }) => <thead className="bg-muted/50" {...props} />,
+                                                th: ({ node, ...props }) => (
+                                                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider border-b border-border" {...props} />
+                                                ),
+                                                td: ({ node, ...props }) => (
+                                                    <td className="px-3 py-2 text-sm border-b border-border" {...props} />
+                                                ),
+                                            }}
+                                        >
+                                            {message.content || '…'}
+                                        </ReactMarkdown>
                                     </div>
                                 </div>
                             ))}

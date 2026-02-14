@@ -4,10 +4,12 @@ import { StorageService, type ChatMessage, type AIModel, type Assistant, type Co
 import { AIService } from '~/utils/ai-service';
 import { extractPageContent } from '~/utils/content-extractor';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import browser from 'webextension-polyfill';
 import { RuntimeMessages } from '~/utils/messages';
 import { Button } from './ui/button';
-import CopyParagraphButton from './ui/copy-paragraph-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Select } from './ui/select';
@@ -52,14 +54,10 @@ const SummaryPanel: React.FC<SummaryPanelProps> = (props) => {
   const [debugContext, setDebugContext] = useState<string>('');
   const [isDebugVisible, setIsDebugVisible] = useState(false);
 
-  // Per-paragraph copy setting
-  const [enablePerParagraphCopy, setEnablePerParagraphCopy] = useState<boolean>(true);
   const [sendKey, setSendKey] = useState<'enter' | 'ctrl-enter'>('ctrl-enter');
   const [autoFocusInput, setAutoFocusInput] = useState<boolean>(true);
   useEffect(() => {
     const load = async () => {
-      const v = await StorageService.getSetting<boolean>('perParagraphCopy', true);
-      setEnablePerParagraphCopy(v ?? true);
       const sk = await StorageService.getSetting<'enter' | 'ctrl-enter'>('sendKey', 'ctrl-enter');
       setSendKey(sk ?? 'ctrl-enter');
       const afi = await StorageService.getSetting<boolean>('autoFocusInput', true);
@@ -717,22 +715,42 @@ ${originalText}`;
                     <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
                   </div>
                   <div className="markdown-body text-sm leading-relaxed text-foreground/90">
-                    {/* Render each paragraph separately and show a copy button on hover */}
-                    {(message.content || '…').split(/\n\s*\n/).map((para, i) => {
-                      const key = `${message.id}-p-${i}`;
-                      return (
-                        <div key={key} className="group relative mb-2">
-                          {enablePerParagraphCopy && (
-                            <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <CopyParagraphButton text={para} />
-                            </div>
-                          )}
-                          <ReactMarkdown components={{ p: ({ node, ...props }) => <p {...props} className="mb-0" /> }}>
-                            {para}
-                          </ReactMarkdown>
-                        </div>
-                      );
-                    })}
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        code({ node, className, children, ...props }: any) {
+                          const match = /language-(\w+)/.exec(className || '');
+                          return match ? (
+                            <SyntaxHighlighter
+                              style={vscDarkPlus}
+                              language={match[1]}
+                              PreTag="div"
+                              {...props}
+                            >
+                              {String(children).replace(/\n$/, '')}
+                            </SyntaxHighlighter>
+                          ) : (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                        table: ({ node, ...props }) => (
+                          <div className="my-4 overflow-x-auto">
+                            <table className="min-w-full divide-y divide-border border border-border" {...props} />
+                          </div>
+                        ),
+                        thead: ({ node, ...props }) => <thead className="bg-muted/50" {...props} />,
+                        th: ({ node, ...props }) => (
+                          <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider border-b border-border" {...props} />
+                        ),
+                        td: ({ node, ...props }) => (
+                          <td className="px-3 py-2 text-sm border-b border-border" {...props} />
+                        ),
+                      }}
+                    >
+                      {message.content || '…'}
+                    </ReactMarkdown>
                   </div>
                 </div>
               ))}
