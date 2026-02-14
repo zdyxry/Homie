@@ -39,7 +39,6 @@ const OptionsApp = () => {
   const [language, setLanguage] = useState<'zh' | 'en'>('zh');
   const [configuringProvider, setConfiguringProvider] = useState<typeof COMMON_MODELS[0] | null>(null);
   const [commonModelConfigs, setCommonModelConfigs] = useState<Record<string, Partial<AIModel>>>({});
-  const [perParagraphCopy, setPerParagraphCopy] = useState<boolean>(true);
   const [sendKey, setSendKey] = useState<'enter' | 'ctrl-enter'>('ctrl-enter');
   const [autoFocusInput, setAutoFocusInput] = useState<boolean>(true);
 
@@ -58,17 +57,10 @@ const OptionsApp = () => {
     setAssistants(loadedAssistants);
 
     // Load settings
-    const ppc = await StorageService.getSetting<boolean>('perParagraphCopy', true);
-    setPerParagraphCopy(ppc ?? true);
     const sk = await StorageService.getSetting<'enter' | 'ctrl-enter'>('sendKey', 'ctrl-enter');
     setSendKey(sk ?? 'ctrl-enter');
     const afi = await StorageService.getSetting<boolean>('autoFocusInput', true);
     setAutoFocusInput(afi ?? true);
-  };
-
-  const handleSetPerParagraphCopy = async (value: boolean) => {
-    await StorageService.saveSetting('perParagraphCopy', value);
-    setPerParagraphCopy(value);
   };
 
   const handleSetSendKey = async (value: 'enter' | 'ctrl-enter') => {
@@ -442,15 +434,6 @@ const OptionsApp = () => {
                   <CardDescription>{t('界面与行为设置', 'UI and behavior')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="font-medium">{t('段落复制按钮', 'Per-paragraph copy buttons')}</div>
-                      <div className="text-sm text-muted-foreground">{t('在每个消息段落右上角显示复制按钮', 'Show a copy button at the top-right of each paragraph')}</div>
-                    </div>
-                    <div>
-                      <Switch checked={perParagraphCopy} onCheckedChange={handleSetPerParagraphCopy} />
-                    </div>
-                  </div>
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="font-medium">{t('发送消息快捷键', 'Send message shortcut')}</div>
