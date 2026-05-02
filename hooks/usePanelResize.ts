@@ -31,7 +31,7 @@ export function usePanelResize(options: UsePanelResizeOptions = {}): UsePanelRes
 
     const handleMouseMove = (e: MouseEvent) => {
       const newWidth = window.innerWidth - e.clientX;
-      setWidth((prev) => {
+      setWidth(() => {
         const clamped = Math.max(minWidth, Math.min(maxWidth, newWidth));
         return clamped;
       });

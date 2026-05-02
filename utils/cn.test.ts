@@ -15,6 +15,6 @@ describe('cn', () => {
   });
 
   it('should handle mixed truthy and falsy values', () => {
-    expect(cn('a', undefined, 'b', null, 'c', 0, 'd')).toBe('a b c d');
+    expect(cn('a', undefined, 'b', null, 'c', '', 'd')).toBe('a b c d');
   });
 });

@@ -10,7 +10,7 @@ interface SettingsState {
   saveSetting: <T>(key: string, value: T) => Promise<void>;
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
+export const useSettingsStore = create<SettingsState>((set) => ({
   perParagraphCopy: true,
   sendKey: 'ctrl-enter',
   autoFocusInput: true,
