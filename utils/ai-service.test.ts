@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AIService, AIError, AIErrorType } from './ai-service';
+import { AIService, AIError } from './ai-service';
 
 const mockModel = {
   id: 'test',
