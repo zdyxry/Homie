@@ -25,6 +25,7 @@ export function isRuntimeMessage(value: unknown): value is RuntimeMessage {
     typeof value === 'object' &&
     value !== null &&
     'type' in value &&
-    typeof (value as RuntimeMessage).type === 'string'
+    typeof (value as RuntimeMessage).type === 'string' &&
+    Object.values(RuntimeMessages).includes((value as RuntimeMessage).type as RuntimeMessageType)
   );
 }
