@@ -134,4 +134,28 @@
     border-radius: 0.4rem;
     font-size: 0.85em;
   }
+
+  #homie-root .markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9em;
+  }
+
+  #homie-root .markdown-body th,
+  #homie-root .markdown-body td {
+    border: 1px solid hsl(var(--border));
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+
+  #homie-root .markdown-body th {
+    background: hsl(var(--muted));
+    font-weight: 600;
+  }
+
+  #homie-root .markdown-body tr:nth-child(even) {
+    background: hsl(var(--muted) / 0.4);
+  }
 }

@@ -7,10 +7,40 @@ import { Input } from './ui/input';
 import { Select } from './ui/select';
 import { Badge } from './ui/badge';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface HistoryTabProps {
     language: 'zh' | 'en';
 }
+
+function getTextFromChildren(children: React.ReactNode): string {
+    let text = '';
+    React.Children.forEach(children, (child) => {
+        if (typeof child === 'string' || typeof child === 'number') {
+            text += String(child);
+        } else if (React.isValidElement(child) && (child.props as { children?: React.ReactNode }).children) {
+            text += getTextFromChildren((child.props as { children?: React.ReactNode }).children);
+        }
+    });
+    return text;
+}
+
+const ParagraphWithCopy: React.FC<{
+    children: React.ReactNode;
+    enablePerParagraphCopy: boolean;
+}> = ({ children, enablePerParagraphCopy }) => {
+    const text = getTextFromChildren(children);
+    return (
+        <div className="group relative mb-2">
+            {enablePerParagraphCopy && (
+                <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <CopyParagraphButton text={text} />
+                </div>
+            )}
+            <p className="mb-0">{children}</p>
+        </div>
+    );
+};
 
 const ITEMS_PER_PAGE = 10;
 
@@ -346,18 +376,18 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ item, onClose, 
                                         <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
                                     </div>
                                     <div className="markdown-body prose prose-sm max-w-none text-foreground/90">
-                                        {(message.content || '…').split(/\n\s*\n/).map((para, i) => (
-                                            <div key={`${message.id}-p-${i}`} className="group relative mb-2">
-                                                {enablePerParagraphCopy && (
-                                                    <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <CopyParagraphButton text={para} />
-                                                    </div>
-                                                )}
-                                                <ReactMarkdown components={{ p: ({ node, ...props }) => <p {...props} className="mb-0" /> }}>
-                                                    {para}
-                                                </ReactMarkdown>
-                                            </div>
-                                        ))}
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                p: ({ children }) => (
+                                                    <ParagraphWithCopy enablePerParagraphCopy={enablePerParagraphCopy}>
+                                                        {children}
+                                                    </ParagraphWithCopy>
+                                                ),
+                                            }}
+                                        >
+                                            {message.content || '…'}
+                                        </ReactMarkdown>
                                     </div>
                                 </div>
                             ))}
